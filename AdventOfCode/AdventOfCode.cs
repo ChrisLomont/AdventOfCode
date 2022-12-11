@@ -15,7 +15,7 @@
     internal abstract class AdventOfCode
     {
         // path from where exe runs to data file, when run in Visual Studio 2022
-        string path = "../../../";
+        public static string path = "../../../";
 
         public string GetFile(int day)
         {
