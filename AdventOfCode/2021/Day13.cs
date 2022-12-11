@@ -12,7 +12,7 @@
             {
                 if (!line.Contains("fold") && line.Contains(','))
                 {
-                    var n = GetNumbers(line, false);
+                    var n = Numbers(line, false);
                     pts.Add(new(n[0], n[1]));
                 }
             }
@@ -29,7 +29,7 @@
             {
                 if (line.Contains("fold"))
                 {
-                    var v = GetNumbers(line, false)[0];
+                    var v = Numbers(line, false)[0];
                     var ydir = line.Contains("y=");
                     if (ydir)
                     {

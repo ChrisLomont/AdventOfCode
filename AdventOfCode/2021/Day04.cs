@@ -11,7 +11,7 @@
         {
             var lines = ReadLines();
 
-            var moves = GetNumbers(lines[0], false);
+            var moves = Numbers(lines[0], false);
             for (var i = 2; i < lines.Count; i += 6)
             {
                 var (w, h, g) = NumberGrid(i, i + 5);

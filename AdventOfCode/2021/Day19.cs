@@ -40,7 +40,7 @@ namespace Lomont.AdventOfCode._2021
 
                 if (line.Contains(','))
                 {
-                    var n = GetNumbers(line);
+                    var n = Numbers(line);
                     scanners.Last().Add(new vec3(n[0], n[1], n[2]));
                 }
             }

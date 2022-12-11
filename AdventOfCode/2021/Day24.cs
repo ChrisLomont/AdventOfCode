@@ -33,9 +33,9 @@
             // parse constants from lines (or above to read them nicely)
             for (var i = 0; i < 14; ++i)
             {
-                c1[i] = GetNumbers(lines[i * 18 + 4])[0];
-                c2[i] = GetNumbers(lines[i * 18 + 5])[0];
-                c3[i] = GetNumbers(lines[i * 18 + 15])[0];
+                c1[i] = Numbers(lines[i * 18 + 4])[0];
+                c2[i] = Numbers(lines[i * 18 + 5])[0];
+                c3[i] = Numbers(lines[i * 18 + 15])[0];
             }
 
             // make push,pop pairs based on c1

@@ -28,7 +28,7 @@ namespace Lomont.AdventOfCode._2021
 
             foreach (var line in lines)
             {
-                var n = GetNumbers(line);
+                var n = Numbers(line);
                 if (n.Max()>bound || n.Min() < -bound) 
                     continue; // out of bounds this pass
                 var (x1, x2, y1, y2, z1, z2) = (n[0], n[1], n[2], n[3], n[4], n[5]);
@@ -309,7 +309,7 @@ namespace Lomont.AdventOfCode._2021
             List<(vec3 v1, vec3 v2, bool on)> commands = new();
             foreach (var line in ReadLines())
             {
-                var n = GetNumbers(line);
+                var n = Numbers(line);
                 var on = line.Contains("on");
                 var (x1,x2) = (n[0], n[1]);
                 var (y1, y2) = (n[2], n[3]);

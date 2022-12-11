@@ -2,8 +2,15 @@
 {
     // baseAOC tools
     /* TODO
-     Add Set, Multiset, from numbers and string and char and IEnum...
+    -  Add Set, Multiset, from numbers and string and char and IEnum...
        Union, Diff, Intersection, SymmDiff (Lomont code has it?)
+
+    - add more generic Grid type here, at least 2d 3d 4d, functors, etc
+    - generic rotate, flip match edges or overlap, align of grid things
+    - Size(grid) return w,h .. for 2d, 3d, 4d
+    - better parsing stuff for example Advent 2022 #11
+
+
     */
     internal abstract class AdventOfCode
     {
@@ -31,6 +38,29 @@
         {
             var dayNumber = Int32.Parse(this.GetType().Name.Substring(3));
             return File.ReadAllLines(GetFile(dayNumber)).ToList();
+        }
+
+        public static long FromDigits(List<int> digits, int b = 10)
+        {
+            long v = 0;
+            digits.Reverse();
+            foreach (var digit in digits)
+            {
+                v = b * v + digit;
+            }
+            return v;
+        }
+
+        public static List<int> ToDigits(long v, int b=10)
+        {
+            var l = new List<int>();
+            while (v > 0)
+            {
+                l.Add((int)(v%b));
+                v /= b;
+            }
+            l.Reverse();
+            return l;
         }
 
         // 01 string to integer
@@ -96,18 +126,50 @@
 
             lines = RangeTo(lines, startLine, endLine);
 
-            var w = lines.Max(b => GetNumbers(b, false).Count);
+            var w = lines.Max(b => Numbers(b, false).Count);
             var h = lines.Count;
 
             var g = new long[w, h];
             for (var j = 0; j < h; ++j)
             {
-                var n = GetNumbers(lines[j], false);
+                var n = Numbers(lines[j], false);
                 for (var i = 0; i < w; ++i)
                     g[i, j] = n[i];
             }
 
             return (w, h, g);
+        }
+
+        public void Mutate<T>(IList<T> items, Func<int, T, T> func)
+        {
+            for (var i = 0; i < items.Count; ++i)
+                items[i] = func(i, items[i]);
+        }
+
+        public void Mutate<T>(IList<T> items, Func<int, T> func)
+        {
+            for (var i = 0; i < items.Count; ++i)
+                items[i] = func(i);
+        }
+
+        public static IEnumerable<T> Nbrs3<T>(T[,,] gg, int i, int j, int k, T def)
+        {
+            for (var di = -1; di <= 1; ++di)
+            for (var dj = -1; dj <= 1; ++dj)
+            for (var dk = -1; dk <= 1; ++dk)
+            {
+                if (di == 0 && dj == 0 && dk == 0) continue;
+                yield return Get(gg, i + di, j + dj, k + dk, def);
+            }
+        }
+        public static IEnumerable<T> Nbrs2<T>(T[,] gg, int i, int j, T def)
+        {
+            for (var di = -1; di <= 1; ++di)
+            for (var dj = -1; dj <= 1; ++dj)
+            {
+                if (di == 0 && dj == 0) continue;
+                yield return Get(gg, i + di, j + dj, def);
+            }
         }
 
 
@@ -193,12 +255,14 @@
                 Console.WriteLine(i);
         }
 
-        protected void Dump<T>(T[,] grid)
+        protected void Dump<T>(T[,] grid, bool noComma = false)
         {
             var m = grid.GetLength(0);
             Apply(grid, (i, j,v) =>
                 {
-                    Console.Write($"{grid[i,j]},");
+                    Console.Write($"{grid[i,j]}");
+                    if (!noComma)
+                        Console.Write(',');
                     if (i == m-1)
                         Console.WriteLine();
                     return v;
@@ -214,7 +278,7 @@
         protected List<long> GetNumbers64(string line) => numberRegex.Matches(line).Select(m => long.Parse(m.Value)).ToList();
 
         // read all numbers out of string, ignore other stuff
-        protected List<int> GetNumbers(string line, bool allowSigned = true)
+        protected List<int> Numbers(string line, bool allowSigned = true)
         {
             if (allowSigned)
                 return signedNumberRegex.Matches(line).Select(m => int.Parse(m.Value)).ToList();
@@ -241,6 +305,14 @@
             for (var j = 0; j < grid.GetLength(1); ++j)
             for (var i = 0; i < grid.GetLength(0); ++i)
                 grid[i, j, k] = func(i, j, k, grid[i, j, k]);
+        }
+        protected void Apply<T>(T[,,,] grid, Func<int, int, int, int, T, T> func)
+        {
+            for (var l = 0; l < grid.GetLength(3); ++l)
+            for (var k = 0; k < grid.GetLength(2); ++k)
+            for (var j = 0; j < grid.GetLength(1); ++j)
+            for (var i = 0; i < grid.GetLength(0); ++i)
+                grid[i, j, k, l] = func(i, j, k, l, grid[i, j, k, l]);
         }
 
 
@@ -275,13 +347,70 @@
         /// <param name="j"></param>
         /// <param name="def"></param>
         /// <returns></returns>
-        protected T Get<T>(T[,] grid, int i, int j, T def)
+        public static T Get<T>(T[,] grid, int i, int j, T def)
         {
             var w = grid.GetLength(0);
             var h = grid.GetLength(1);
             if (i < 0 || j < 0 || w <= i || h <= j) return def;
             return grid[i, j];
         }
+        public static T Get<T>(T[,,] grid, int i, int j, int k, T def)
+        {
+            var w = grid.GetLength(0);
+            var h = grid.GetLength(1);
+            var d = grid.GetLength(2);
+
+            if (i < 0 || j < 0 || k < 0 || w <= i || h <= j || d<=k) return def;
+            return grid[i, j,k];
+        }
+
+        protected T Get<T>(T[,,,] grid, int i, int j, int k, int q, T def)
+        {
+            var w = grid.GetLength(0);
+            var h = grid.GetLength(1);
+            var d = grid.GetLength(2);
+            var r = grid.GetLength(3);
+
+            if (i < 0 || j < 0 || k < 0 || q < 0 || w <= i || h <= j || d <= k || r <= q) return def;
+            return grid[i, j, k, q];
+        }
+
+        /// <summary>
+        /// split line into words on char, to list, remove empty
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="sp"></param>
+        /// <param name="opts"></param>
+        /// <returns></returns>
+        public static List<string> Split(string line, char sp = ' ', StringSplitOptions opts = StringSplitOptions.RemoveEmptyEntries)
+        {
+            var words = line.Split(sp, opts);
+            return words.ToList();
+        }
+
+        public static void Assert(bool val)
+        {
+            Trace.Assert(val);
+        }
+
+        /// <summary>
+        /// Given list of strings, and list of tuples (int,regex), assert they match
+        /// For validation of assumptions
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="checks"></param>
+        public static void MatchWords(IList<string> items, params (int, string)[] checks)
+        {
+            foreach (var (index, pattern) in checks)
+            {
+                if (!Regex.IsMatch(items[index], pattern))
+                {
+                    Console.WriteLine($"ERROR: '{items[index]}' does not match '{pattern}'");
+                    Environment.Exit(-1);
+                }
+            }
+        }
+
 
         #endregion
 

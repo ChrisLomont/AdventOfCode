@@ -27,7 +27,7 @@ namespace Lomont.AdventOfCode._2022
                 }
                 else if (line.Contains("move"))
                 {
-                    var n = GetNumbers(line, false);
+                    var n = Numbers(line, false);
                     var cnt = n[0];
                     var s= stacks[n[1]-1];
                     var d= stacks[n[2]-1];

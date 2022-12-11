@@ -11,25 +11,25 @@
                 if (!part2)
                 {
                     if (line.Contains("forward"))
-                        h += GetNumbers(line,false)[0];
+                        h += Numbers(line,false)[0];
                     if (line.Contains("down"))
-                        d += GetNumbers(line, false)[0];
+                        d += Numbers(line, false)[0];
                     if (line.Contains("up"))
-                        d -= GetNumbers(line, false)[0];
+                        d -= Numbers(line, false)[0];
                 }
                 else
                 {
                     if (line.Contains("forward"))
                     {
-                        var v = GetNumbers(line, false)[0];
+                        var v = Numbers(line, false)[0];
                         h += v;
                         d += aim*v;
                     }
 
                     if (line.Contains("down"))
-                        aim += GetNumbers(line, false)[0];
+                        aim += Numbers(line, false)[0];
                     if (line.Contains("up"))
-                        aim -= GetNumbers(line, false)[0];
+                        aim -= Numbers(line, false)[0];
                 }
             }
             return h*d;

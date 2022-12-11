@@ -6,7 +6,7 @@ namespace Lomont.AdventOfCode._2021
         public override object Run(bool part2)
         {
             var testLines = ReadLines();
-            var numberLines = testLines.Select(b=>GetNumbers(b)).ToList();
+            var numberLines = testLines.Select(b=>Numbers(b)).ToList();
 
             var max = numberLines.Max(l => l.Max());
             var g = new int[max+1, max+1];

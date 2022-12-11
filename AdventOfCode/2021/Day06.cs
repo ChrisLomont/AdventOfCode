@@ -9,7 +9,7 @@
             long[] timeToBirth = new long[10];
 
             var lines = ReadLines();
-            var nums = GetNumbers(lines[0], false);
+            var nums = Numbers(lines[0], false);
             foreach (var n in nums)
                 timeToBirth[n]++;
             var steps = part2 ? 256 : 80;

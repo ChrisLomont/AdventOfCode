@@ -5,7 +5,7 @@
         public override object Run(bool part2)
         {
             var lines = ReadLines();
-            var nums = GetNumbers(lines[0], false);
+            var nums = Numbers(lines[0], false);
             var a = nums.Min();
             var b = nums.Max();
 

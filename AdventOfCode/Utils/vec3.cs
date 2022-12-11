@@ -1,14 +1,10 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using static System.Math;
-
-namespace Lomont.AdventOfCode.Utils;
-
-
+﻿namespace Lomont.AdventOfCode.Utils;
 
 public class vec3
 {
     public int AbsMax => Math.Max(Math.Abs(x), Math.Max(Math.Abs(y), Math.Abs(z)));
-    public vec3(int x, int y, int z=0)
+
+    public vec3(int x=0, int y=0, int z=0)
     {
         this.x = x;
         this.y = y;
@@ -95,5 +91,20 @@ public class vec3
 
         return new vec3(x1, y1, z1);
     }
+
+    // CUDA like reads and writes
+    public (int x, int y) xy { get => (x, y); set => (x, y) = value; }
+    public (int y, int x) yx { get => (y, x); set => (y, x) = value; }
+    public (int y, int z) yz { get => (y, z); set => (y, z) = value; }
+    public (int z, int y) zy { get => (z, y); set => (z, y) = value; }
+    public (int z, int x) zx { get => (z, x); set => (z, x) = value; }
+    public (int x, int z) xz { get => (x, z); set => (x, z) = value; }
+
+    public (int x, int y, int z) xyz { get => (x, y, z); set => (x, y, z) = value; }
+    public (int x, int z, int y) xzy { get => (x, z, y); set => (x, z, y) = value; }
+    public (int y, int x, int z) yxz { get => (y, x, z); set => (y, x, z) = value; }
+    public (int y, int z, int x) yzx { get => (y, z, x); set => (y, z, x) = value; }
+    public (int z, int x, int y) zxy { get => (z, x, y); set => (z, x, y) = value; }
+    public (int z, int y, int x) zyx { get => (z, y, x); set => (z, y, x) = value; }
 
 }
