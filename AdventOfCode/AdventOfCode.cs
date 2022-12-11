@@ -25,6 +25,15 @@
             return $"{path}/{year}/Data/Day{day:D2}.txt";
         }
 
+        public static (int w, int h) Size<T>(T[,] g)
+        {
+            return (g.GetLength(0), g.GetLength(1));
+        }
+        public static (int w, int h,int d) Size<T>(T[,,] g)
+        {
+            return (g.GetLength(0), g.GetLength(1),g.GetLength(2));
+        }
+
 
         /// <summary>
         /// Run a problem, part 2 if part2==true
@@ -291,7 +300,7 @@
         /// <typeparam name="T"></typeparam>
         /// <param name="grid"></param>
         /// <param name="func"></param>
-        protected void Apply<T>(T[,] grid, Action<T> func)
+        protected static void Apply<T>(T[,] grid, Action<T> func)
         {
             for (var i = 0; i < grid.GetLength(0); ++i)
             for (var j = 0; j < grid.GetLength(1); ++j)
@@ -315,9 +324,16 @@
                 grid[i, j, k, l] = func(i, j, k, l, grid[i, j, k, l]);
         }
 
+        // i,j,grid value to new grid value
+        protected static int Count<T>(T[,] grid, Func<T,bool> func)
+        {
+            var count = 0;
+            Apply(grid,v=>count += func(v)?1:0);
+            return count;
+        }
 
         // i,j,grid value to new grid value
-        protected void Apply<T>(T[,] grid, Func<int,int,T,T> func)
+        protected static void Apply<T>(T[,] grid, Func<int,int,T,T> func)
         {
             for (var j = 0; j < grid.GetLength(1); ++j)
             for (var i = 0; i < grid.GetLength(0); ++i)

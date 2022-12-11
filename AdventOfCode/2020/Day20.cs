@@ -294,11 +294,6 @@
                 return g2;
             }
 
-            (int w, int h) Size(char[,] g)
-            {
-                return (g.GetLength(0), g.GetLength(1));
-            }
-
             int Hash(Tile tile, Dir dir)
             {
                 var g = tile.grid;

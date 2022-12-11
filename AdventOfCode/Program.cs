@@ -3,9 +3,8 @@ using Lomont.AdventOfCode.Utils;
 
 
 // create files for a year of stuff
-Utils.MakeYearFiles(2019, AdventOfCode.path);
-RunDays(1, 10, 2019);
-
+//Utils.MakeYearFiles(2020, AdventOfCode.path);
+//RunDays(1, 25, 2019);
 
 //Set<int>.TestSet();
 //return;
@@ -15,11 +14,11 @@ RunDays(1, 10, 2019);
 // RunDays(A,B) to get A through B
 // RunDays(A,B,y1,y2) to get A through B on years y1 through y2
 
-RunDays(1,10, 2019);
+RunDays(11,15, 2020);
 
 //RunDays(1,15, 2020);
 //RunDays(1,5, 2022);
-//RunDays(1, 11, 2022);
+//RunDays(11, 11, 2022);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)
@@ -60,8 +59,11 @@ void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)
 
     void Result(int year, int day, bool part2, (object answer, TimeSpan elapsed) result)
     {
-        if (result.answer is Exception ex)
+        if (result.answer is NotImplementedException ex)
+        {
             result.answer = "EXCEPTION: " + ex.Message;
+        }
+
         var dt = part2 ? "part 2" : "part 1";
         Console.Write($"{year} Day {day} {dt}: ");
         Console.ForegroundColor = ConsoleColor.Yellow;
@@ -85,7 +87,7 @@ void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)
             var elapsed = sw.Elapsed;
             return (score, elapsed);
         }
-        catch (Exception ex)
+        catch (NotImplementedException ex)
         {
             return (ex, TimeSpan.Zero);
         }
