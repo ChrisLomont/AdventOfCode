@@ -20,8 +20,9 @@
         }
         class Dir
         {
+            static Dir empty = new Dir();
             public List<Dir> Children = new();
-            public Dir Parent=new Dir();
+            public Dir Parent=empty;
             public string Name="";
             public List<FileEntry> Files = new();
 
