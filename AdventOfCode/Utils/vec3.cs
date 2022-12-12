@@ -1,6 +1,6 @@
 ﻿namespace Lomont.AdventOfCode.Utils;
 
-public class vec3
+public class vec3 : IEquatable<vec3>
 {
     public int AbsMax => Math.Max(Math.Abs(x), Math.Max(Math.Abs(y), Math.Abs(z)));
 
@@ -10,7 +10,10 @@ public class vec3
         this.y = y;
         this.z = z;
     }
-    public int x, y, z;
+
+    public int x;
+    public int y;
+    public int z;
 
     // each left component <= corresponding right
     public static bool operator <=(vec3 lhs, vec3 rhs)
@@ -71,13 +74,6 @@ public class vec3
         return $"({x},{y},{z})";
     }
 
-    public static bool operator ==(vec3 lhs, vec3 rhs)
-    {
-        return (lhs - rhs).LengthSquared == 0;
-    }
-
-    public static bool operator !=(vec3 lhs, vec3 rhs) => !(lhs == rhs);
-
     //apply rotations, return new vec
     public vec3 RotXYZ(int rx, int ry, int rz)
     {
@@ -106,5 +102,46 @@ public class vec3
     public (int y, int z, int x) yzx { get => (y, z, x); set => (y, z, x) = value; }
     public (int z, int x, int y) zxy { get => (z, x, y); set => (z, x, y) = value; }
     public (int z, int y, int x) zyx { get => (z, y, x); set => (z, y, x) = value; }
+
+    #region Equality, Inequality, Hash code
+
+    //public static bool operator ==(vec3 lhs, vec3 rhs)
+    //{
+    //    return (lhs - rhs).LengthSquared == 0;
+    //}
+    //
+    //public static bool operator !=(vec3 lhs, vec3 rhs) => !(lhs == rhs);
+
+    public static bool operator ==(vec3? lhs, vec3? rhs)
+    {
+        if (lhs is null)
+        {
+            if (rhs is null) return true;
+            return false;
+        }
+        return lhs.Equals(rhs);
+    }
+    public static bool operator !=(vec3 lhs, vec3 rhs) => !(lhs == rhs);
+
+    public override int GetHashCode()
+    { // Optimized Spatial Hashing for Collision Detection of Deformable objects
+      // http://www.beosil.com/download/CollisionDetectionHashing_VMV03.pdf
+      // three large primes from paper: 73856093, 19349663, 83492791
+      // can take mod N for a size N hash table
+      return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+    }
+
+    public bool Equals(vec3? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        if (GetType() != other.GetType()) return false; // exact same type
+        return (this-other).LengthSquared==0; // finally, check values
+    }
+
+    public override bool Equals(object? obj) => Equals(obj as vec3);
+
+    #endregion
+
 
 }

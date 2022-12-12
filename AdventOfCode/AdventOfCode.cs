@@ -22,20 +22,26 @@
     internal abstract class AdventOfCode
     {
         // path from where exe runs to data file, when run in Visual Studio 2022
-        public static string path = "../../../";
+        public static string DataPath = "../../../";
 
         public string GetFile(int day)
         {
             var t = this.GetType().FullName;
             Trace.Assert(t != null);
             var year = new Regex(@"\d{4}").Match(t!).Value;
-            return $"{path}/{year}/Data/Day{day:D2}.txt";
+            return $"{DataPath}/{year}/Data/Day{day:D2}.txt";
         }
 
+        /// <summary>
+        /// Size of a grid
+        /// </summary>
         public static (int w, int h) Size<T>(T[,] g)
         {
             return (g.GetLength(0), g.GetLength(1));
         }
+        /// <summary>
+        /// Size of a grid
+        /// </summary>
         public static (int w, int h,int d) Size<T>(T[,,] g)
         {
             return (g.GetLength(0), g.GetLength(1),g.GetLength(2));
@@ -43,7 +49,7 @@
 
         // todo- make this general, use elsewhere
         // group lines by size of group or by regex match
-        // if groupSize != -1, groupd by size
+        // if groupSize != -1, grouped by size
         // else lines appended with \n, then regex splits, then \n removed from each, 
         // default splits on \n\n (a blank line)
         public static List<List<string>> Group(IEnumerable<string> lines, int size = -1, string matchPattern = "\n\n")
@@ -59,6 +65,9 @@
                 .Select(s => s.ToList()).ToList();
         }
 
+        /// <summary>
+        /// Tally items, returning list of (count,item)
+        /// </summary>
         public static List<(int count, T item)> Tally<T>(IEnumerable<T> items)
         {
             var d = new Dictionary<T, int>();
@@ -71,6 +80,11 @@
             return d.Select(p=>(p.Value,p.Key)).ToList();
         }
 
+        /// <summary>
+        /// Count bits set
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static int BitCount(long v)
         {
             int count = 0;
@@ -89,13 +103,19 @@
         /// <returns></returns>
         public abstract object Run(bool part2);
 
-        // enumerate over data file
+        /// <summary>
+        /// Get all lines from the data file
+        /// </summary>
+        /// <returns></returns>
         protected List<string> ReadLines()
         {
             var dayNumber = Int32.Parse(this.GetType().Name.Substring(3));
             return File.ReadAllLines(GetFile(dayNumber)).ToList();
         }
 
+        /// <summary>
+        /// Create number from base b digits
+        /// </summary>
         public static long FromDigits(List<int> digits, int b = 10)
         {
             long v = 0;
@@ -107,6 +127,9 @@
             return v;
         }
 
+        /// <summary>
+        /// Create digits base b from number
+        /// </summary>
         public static List<int> ToDigits(long v, int b=10)
         {
             var l = new List<int>();
@@ -119,7 +142,11 @@
             return l;
         }
 
-        // 01 string to integer
+        /// <summary>
+        /// Convert text of 0,1 to binary integer
+        /// </summary>
+        /// <param name="txt"></param>
+        /// <returns></returns>
         protected static long BinaryToInteger(string txt)
         {
             long v = 0;
@@ -202,12 +229,23 @@
                 items[i] = func(i, items[i]);
         }
 
+        // modify item in place, over increasing i, allowing telescroping rewrites
         public void Mutate<T>(IList<T> items, Func<int, T> func)
         {
             for (var i = 0; i < items.Count; ++i)
                 items[i] = func(i);
         }
 
+        /// <summary>
+        /// 27 3d neighbors
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="gg"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        /// <param name="def"></param>
+        /// <returns></returns>
         public static IEnumerable<T> Nbrs3<T>(T[,,] gg, int i, int j, int k, T def)
         {
             for (var di = -1; di <= 1; ++di)
@@ -218,6 +256,15 @@
                 yield return Get(gg, i + di, j + dj, k + dk, def);
             }
         }
+        /// <summary>
+        /// 8 2d neighbors
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="gg"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="def"></param>
+        /// <returns></returns>
         public static IEnumerable<T> Nbrs2<T>(T[,] gg, int i, int j, T def)
         {
             for (var di = -1; di <= 1; ++di)
@@ -227,7 +274,6 @@
                 yield return Get(gg, i + di, j + dj, def);
             }
         }
-
 
         #region Utility
 
@@ -283,7 +329,9 @@
             return ans;
         }
 
-        // string to number
+        /// <summary>
+        /// string to number
+        /// </summary>
         protected long Num(string n) => long.Parse(n);
 
         protected List<T> Union<T>(IEnumerable<T> list1) =>
@@ -303,7 +351,7 @@
             list1.Skip(first).Take(last-first).ToList();
 
         /// <summary>
-        /// Dump list
+        /// Dump enumerable
         /// </summary>
         public static void Dump<T>(IEnumerable<T> items)
         {
@@ -311,6 +359,9 @@
                 Console.WriteLine(i);
         }
 
+        /// <summary>
+        /// Dump 2d grid
+        /// </summary>
         protected void Dump<T>(T[,] grid, bool noComma = false)
         {
             var m = grid.GetLength(0);
