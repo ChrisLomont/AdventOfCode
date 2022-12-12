@@ -4,17 +4,17 @@ namespace Lomont.AdventOfCode._2020
     {
         public override object Run(bool part2)
         {
+            var (w, h, g) = CharGrid();
             if (!part2) 
-            return Do(3, 1);
+                return CountTrees(3, 1);
 
-            var sl = new[] {(1,1),(3,1),(5,1),(7,1),(1, 2) }.Select(p => Do(p.Item1,p.Item2)).ToList();
+            var sl = new[] {(1,1),(3,1),(5,1),(7,1),(1, 2) }.Select(p => CountTrees(p.Item1,p.Item2)).ToList();
            // Dump(sl);
             return sl.Aggregate(1L,(a,b)=>a*b);
 
-            int Do(int dx, int dy)
+            int CountTrees(int dx, int dy)
             {
                 int count = 0;
-                var (w, h, g) = CharGrid();
                 var (x, y) = (0, 0);
                 while (y < h)
                 {

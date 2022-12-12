@@ -107,11 +107,11 @@ namespace Lomont.AdventOfCode._2020
                         soln.Add(targetVal);
                         ans2 = Score(soln);
                         soln.RemoveAt(soln.Count - 1);
-                        Console.WriteLine($"Solved! {ans2}");
+                        //Console.WriteLine($"Solved! {ans2}");
                         //Dump(soln);
                     }
-                    else
-                        Console.WriteLine("Failed!");
+                    //else
+                    //    Console.WriteLine("Failed!");
 
                 }
                 else

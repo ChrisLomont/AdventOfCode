@@ -16,7 +16,6 @@ namespace Lomont.AdventOfCode._2020
                 {
                     if (l[i] + l[j] + l[k] == 2020)
                         return l[i] * l[j] * l[k];
-
                 }
             }
 

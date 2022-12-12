@@ -7,36 +7,36 @@ namespace Lomont.AdventOfCode._2020
         public override object Run(bool part2)
         {
 
-            List<long> counts = new();
+            List<long> seatIds = new();
             foreach (var line in ReadLines())
             {
-                var p = line[0..7];
-                var q = line[7..];
+                var rowText = line[..7];
+                var colText = line[7..];
 
-                p = p.Replace('F', '0').Replace('B', '1');
-                q = q.Replace('L', '0').Replace('R', '1');
+                rowText = rowText.Replace('F', '0').Replace('B', '1');
+                colText = colText.Replace('L', '0').Replace('R', '1');
 
-                var row = BinaryToInteger(p);
-                var col = BinaryToInteger(q);
+                var row = BinaryToInteger(rowText);
+                var col = BinaryToInteger(colText);
                 //Console.WriteLine(col);
                 //Console.WriteLine(row);
                 //Console.WriteLine();
-                counts.Add(8*row + col);
+                seatIds.Add(8*row + col);
             }
-            counts.Sort();
+            //seatIds.Sort();
             //Dump(counts);
 
-            var min = counts.Min();
-            var max = counts.Max();
-            var miss = Enumerable.Range((int)min, (int)max).Where(e => !counts.Contains(e)).ToList();
+            var min = seatIds.Min();
+            var max = seatIds.Max();
+            var miss = Enumerable.Range((int)min, (int)max).Where(e => !seatIds.Contains(e)).ToList();
             //Dump(miss);
             //Console.WriteLine(min);
             //Console.WriteLine(max);
 
-            var mm = miss.Where(t => t > min + 100 && t < max - 100).ToList();
+            var missed = miss.Where(t => t > min + 100 && t < max - 100).ToList();
             if (part2)
-            return mm[0];
-            return counts.Max();
+            return missed[0];
+            return seatIds.Max();
 
 
         }

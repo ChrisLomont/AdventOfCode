@@ -9,8 +9,15 @@
     - generic rotate, flip match edges or overlap, align of grid things
     - Size(grid) return w,h .. for 2d, 3d, 4d
     - better parsing stuff for example Advent 2022 #11
-
-
+    - graph class, tree class (add to Lomont?) see 2020 day 4 and many others
+    - generic memoizer?
+    - grid diff locations?
+    - gen rays in directions, find first hi item (see 2020 say 11)
+    - nbrs on ordinal dirs, all dirs
+    - list of dirs
+    - perform dihedral actions on grid (see 2020 Day 20)
+    - abstract patterns: see 2020 day 4
+    - add manhattan distances, hamming distances
     */
     internal abstract class AdventOfCode
     {
@@ -34,6 +41,46 @@
             return (g.GetLength(0), g.GetLength(1),g.GetLength(2));
         }
 
+        // todo- make this general, use elsewhere
+        // group lines by size of group or by regex match
+        // if groupSize != -1, groupd by size
+        // else lines appended with \n, then regex splits, then \n removed from each, 
+        // default splits on \n\n (a blank line)
+        public static List<List<string>> Group(IEnumerable<string> lines, int size = -1, string matchPattern = "\n\n")
+        {
+            if (size > 0)
+                return lines.Chunk(size).Select(arr => arr.ToList()).ToList();
+
+            var all = lines.Aggregate("", (a, b) => a + "\n" + b);
+            var chunks = Regex.Split(all, matchPattern);
+            //var gps = all.Split(match, StringSplitOptions.RemoveEmptyEntries);
+            return chunks
+                .Select(g => g.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                .Select(s => s.ToList()).ToList();
+        }
+
+        public static List<(int count, T item)> Tally<T>(IEnumerable<T> items)
+        {
+            var d = new Dictionary<T, int>();
+            foreach (var item in items)
+            {
+                if (!d.ContainsKey(item))
+                    d.Add(item, 0);
+                d[item]++;
+            }
+            return d.Select(p=>(p.Value,p.Key)).ToList();
+        }
+
+        public static int BitCount(long v)
+        {
+            int count = 0;
+            while (v > 0)
+            {
+                count += (int)(v & 1);
+                v >>= 1;
+            }
+            return count;
+        }
 
         /// <summary>
         /// Run a problem, part 2 if part2==true
@@ -280,14 +327,14 @@
             Console.WriteLine();
         }
 
-        Regex numberRegex = new Regex(@"\d+");
-        Regex signedNumberRegex = new Regex(@"(\+|-)?\d+");
+        static Regex numberRegex = new Regex(@"\d+");
+        static Regex signedNumberRegex = new Regex(@"(\+|-)?\d+");
 
         // read all numbers out of string, ignore other stuff
         protected List<long> GetNumbers64(string line) => numberRegex.Matches(line).Select(m => long.Parse(m.Value)).ToList();
 
         // read all numbers out of string, ignore other stuff
-        protected List<int> Numbers(string line, bool allowSigned = true)
+        protected static List<int> Numbers(string line, bool allowSigned = true)
         {
             if (allowSigned)
                 return signedNumberRegex.Matches(line).Select(m => int.Parse(m.Value)).ToList();

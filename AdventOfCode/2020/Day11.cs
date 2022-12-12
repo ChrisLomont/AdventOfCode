@@ -20,7 +20,7 @@ namespace Lomont.AdventOfCode._2020
             return Count(g, v => v == '#');
 
             bool Same(char[,] g1, char[,] g2)
-            {
+            { // todo- abstract
                 bool same = true;
                 Apply(g1, (i, j, v) =>
                 {

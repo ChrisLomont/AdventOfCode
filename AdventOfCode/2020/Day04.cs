@@ -7,6 +7,9 @@ namespace Lomont.AdventOfCode._2020
     {
         // 2020 Day 4 part 1: 237 in 687571 us
         // 2020 Day 4 part 2: 237 in 444270.9 us
+
+        // todo - may be some nicer parsing tricks to abstract out
+
         public override object Run(bool part2)
         {
             var count = 0;

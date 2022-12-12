@@ -6,6 +6,9 @@ namespace Lomont.AdventOfCode._2020
 {
     internal class Day07 : AdventOfCode
     {
+        // todo - pull out directed graph use it
+        // map tree over graph?
+
     // 2020 Day 7 part 1: 261 in 25492.4 us
     // 2020 Day 7 part 2: 3765 in 74465.3 us
         public override object Run(bool part2)
@@ -50,7 +53,7 @@ namespace Lomont.AdventOfCode._2020
             }
 
             if (!part2)
-            return h.Count;
+                return h.Count;
 
             var count = 0L;
             var qq = new Queue<(long mul, string name)>();

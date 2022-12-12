@@ -35,7 +35,7 @@ namespace Lomont.AdventOfCode._2020
 
             throw new Exception();
 
-            (bool inf, int val) RunOne(List<string> lines)
+            static (bool inf, int val) RunOne(List<string> lines)
             {
 
                 var pc = 0;
