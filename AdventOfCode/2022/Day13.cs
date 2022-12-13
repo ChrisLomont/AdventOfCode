@@ -14,6 +14,9 @@ namespace Lomont.AdventOfCode._2022
     //2022 Day 13 part 2: 24477 in 1823.9 us
     
     // todo - nice to have n-tree builder from text cleanly
+    // example probs 2022: 13, 2021 18, 10, 
+
+    // maybe make bottom up regex based?
 
     internal class Day13 : AdventOfCode
     {
@@ -66,50 +69,29 @@ namespace Lomont.AdventOfCode._2022
             return score; // not 5750
 
         }
-        static int Compare(Node lp, Node rp)
+        static int Compare(Node lhs, Node rhs)
         {
-            if (lp.isNum && rp.isNum)
+            if (lhs.isNum && rhs.isNum) 
+                return Math.Sign(lhs.val - rhs.val);
+            if (!lhs.isNum && !rhs.isNum)
             {
-                if (lp.val < rp.val)
-                    return -1; // left smaller
-                else if (lp.val > rp.val)
-                    return +1; // right smaller
-                return 0;
-            }
-            if (!lp.isNum && !rp.isNum)
-            {
-                int i = 0;
-                while (true)
+                var (lc, rc) = (lhs.children.Count, rhs.children.Count);
+                for (var i = 0; i < Math.Min(lc, rc); ++i)
                 {
-                    if (i >= lp.children.Count && i < rp.children.Count)
-                        return -1;
-                    if (i >= rp.children.Count && i < lp.children.Count)
-                        return +1;
-                    if (i == rp.children.Count && i == lp.children.Count)
-                        return 0;
-                    var c = Compare(lp.children[i], rp.children[i]);
+                    var c = Compare(lhs.children[i], rhs.children[i]);
                     if (c != 0) return c;
-                    ++i;
                 }
+
+                return Math.Sign(lc - rc);
             }
 
-            if (lp.isNum && !rp.isNum)
-            {
-                var c = Compare(NumToList(lp), rp);
-                if (c != 0) return c;
-                return 0;
-            }
-            if (!lp.isNum && rp.isNum)
-            {
-                var c = Compare(lp, NumToList(rp));
-                if (c != 0) return c;
-                return 0;
-            }
+            return Compare(
+                    EnforceNumAsList(lhs), 
+                    EnforceNumAsList(rhs));
 
-            return 0;
-
-            Node NumToList(Node n)
+            Node EnforceNumAsList(Node n)
             {
+                if (!n.isNum) return n;
                 var n1 = new Node();
                 n1.children.Add(n);
                 return n1;
@@ -118,25 +100,20 @@ namespace Lomont.AdventOfCode._2022
 
         static Node Parse(string line)
         {
-            int ind = 0;
-            var p = Recurse(line, ref ind);
-            p.txt = line;
-            return p;
-            
-            static Node Recurse(string line, ref int i)
+            Trace.Assert(line[0] == '[');
+            var i = 1; // start part opening '['
+            var root = Recurse();
+            root.txt = line;
+            return root;
+
+            Node Recurse()
             {
                 var p = new Node();
-                if (i == 0)
-                {
-                    Trace.Assert(line[i] == '[');
-                    ++i;
-                }
-
                 while (true)
                 {
                     var c = line[i++];
                     if (c == '[')
-                        Add(Recurse(line, ref i));
+                        p.children.Add(Recurse());
                     else if (c == ']')
                         return p;
                     else if (char.IsDigit(c))
@@ -144,21 +121,39 @@ namespace Lomont.AdventOfCode._2022
                         var val = c - '0';
                         while (char.IsDigit(line[i]))
                             val = 10 * val + (line[i++] - '0');
-                        Add(new Node { isNum = true, val = val });
+                        p.children.Add(new Node { isNum = true, val = val });
                     }
-                    else if (c == ',')
-                    {
-                    }
-                    else throw new Exception();
                 }
-
-                void Add(Node n)
-                {
-                    p.children.Add(n);
-                }
-
             }
         }
+
+        // parsing experiment - bottom up
+        static Node Parse2(string line)
+        {
+
+            //var leafReg = new Regex(@"([0-9]+,)*[0-9]+");
+            var leafReg = new Regex(@"\[(((x\d+|\d+),)*((x\d+|\d+)))?\]");
+
+            Console.WriteLine("Matching " + line);
+            var nodeIndex = 0; // node index
+            while (true)
+            {
+                var matches = leafReg.Matches(line);
+                if (matches.Count == 0) break;
+                foreach (Match m in matches)
+                {
+                    Console.Write($"<{m.Value}> ");
+                    line = line.Replace(m.Value, $"x{nodeIndex}");
+                    ++nodeIndex;
+                }
+                Console.WriteLine();
+                Console.WriteLine("reduced " + line);
+            }
+
+            return null;
+
+        }
+
 
 
     }
