@@ -1,4 +1,6 @@
 ﻿
+using Lomont.Formats;
+
 namespace Lomont.AdventOfCode._2022
 {
     // done 12:40am ~1840
@@ -12,73 +14,63 @@ namespace Lomont.AdventOfCode._2022
 
     //2022 Day 13 part 1: 5825 in 7241.4 us
     //2022 Day 13 part 2: 24477 in 1823.9 us
-    
-    // todo - nice to have n-tree builder from text cleanly
-    // example probs 2022: 13, 2021 18, 10, 
-
-    // maybe make bottom up regex based?
 
     internal class Day13 : AdventOfCode
     {
-        class Node
-        {
-            public List<Node> children = new();
-            public string txt;
-            public bool isNum;
-            public int val;
-            public override string ToString()
-            {
-                if (isNum) return $"N: {val}";
-                return $"Ch: {children.Count}";
-            }
-        }
 
         public override object Run(bool part2)
         {
             long score = 0;
             var lines = ReadLines();
-            var packets = new List<Node>();
-            for (var index = 0; index < lines.Count; index+=3)
+            var packets = new List<Tree>();
+            for (var index = 0; index < lines.Count; index += 3)
             {
-                var left = Parse(lines[index]);
-                var right = Parse(lines[index + 1]);
-                packets.Add(right);
-                packets.Add(left);
-
-                if (Compare(left, right) < 0)
-                    score += (index / 3)+1; // part 1 score: sum of 1 based packet pair indices
+                packets.Add(new Tree(lines[index]));
+                packets.Add(new Tree(lines[index + 1]));
+                if (Compare(packets[^2], packets[^1]) < 0)
+                    score += (index / 3) + 1; // part 1 score: sum of 1 based packet pair indices
             }
 
             if (part2)
             {
                 var t2 = "[[2]]";
                 var t6 = "[[6]]";
-                packets.Add(Parse(t2));
-                packets.Add(Parse(t6));
+                packets.Add(new Tree(t2));
+                packets.Add(new Tree(t6));
 
                 packets.Sort(Compare);
 
                 var prod = 1;
                 for (var i = 0; i < packets.Count; i++)
-                    if (packets[i].txt == "[[2]]" ||  packets[i].txt == "[[6]]")
+                    if (packets[i].Text == "[[2]]" || packets[i].Text == "[[6]]")
                         prod *= (i + 1); // part 2: product of 1 based special indices
-                return prod;
+                return prod; // 
             }
 
-
-            return score; // not 5750
-
+            return score; // 5825
         }
-        static int Compare(Node lhs, Node rhs)
+
+
+        static int Compare(Tree lhs, Tree rhs)
         {
-            if (lhs.isNum && rhs.isNum) 
-                return Math.Sign(lhs.val - rhs.val);
-            if (!lhs.isNum && !rhs.isNum)
+            (bool isNum, int val) GetNum(Tree t)
             {
-                var (lc, rc) = (lhs.children.Count, rhs.children.Count);
+
+                var isNum = Int32.TryParse(t.Payload, out var v);
+                return (isNum, v);
+            }
+
+            var (lnum, lval) = GetNum(lhs);
+            var (rnum, rval) = GetNum(rhs);
+
+            if (lnum && rnum)
+                return Math.Sign(lval - rval);
+            if (!lnum && !rnum)
+            {
+                var (lc, rc) = (lhs.Children.Count, rhs.Children.Count);
                 for (var i = 0; i < Math.Min(lc, rc); ++i)
                 {
-                    var c = Compare(lhs.children[i], rhs.children[i]);
+                    var c = Compare(lhs.Children[i], rhs.Children[i]);
                     if (c != 0) return c;
                 }
 
@@ -86,75 +78,16 @@ namespace Lomont.AdventOfCode._2022
             }
 
             return Compare(
-                    EnforceNumAsList(lhs), 
-                    EnforceNumAsList(rhs));
+                EnforceNumAsList(lhs),
+                EnforceNumAsList(rhs));
 
-            Node EnforceNumAsList(Node n)
+            Tree EnforceNumAsList(Tree n)
             {
-                if (!n.isNum) return n;
-                var n1 = new Node();
-                n1.children.Add(n);
+                if (!GetNum(n).isNum) return n;
+                var n1 = new Tree();
+                n1.Children.Add(n);
                 return n1;
             }
         } // compare
-
-        static Node Parse(string line)
-        {
-            Trace.Assert(line[0] == '[');
-            var i = 1; // start part opening '['
-            var root = Recurse();
-            root.txt = line;
-            return root;
-
-            Node Recurse()
-            {
-                var p = new Node();
-                while (true)
-                {
-                    var c = line[i++];
-                    if (c == '[')
-                        p.children.Add(Recurse());
-                    else if (c == ']')
-                        return p;
-                    else if (char.IsDigit(c))
-                    {
-                        var val = c - '0';
-                        while (char.IsDigit(line[i]))
-                            val = 10 * val + (line[i++] - '0');
-                        p.children.Add(new Node { isNum = true, val = val });
-                    }
-                }
-            }
-        }
-
-        // parsing experiment - bottom up
-        static Node Parse2(string line)
-        {
-
-            //var leafReg = new Regex(@"([0-9]+,)*[0-9]+");
-            var leafReg = new Regex(@"\[(((x\d+|\d+),)*((x\d+|\d+)))?\]");
-
-            Console.WriteLine("Matching " + line);
-            var nodeIndex = 0; // node index
-            while (true)
-            {
-                var matches = leafReg.Matches(line);
-                if (matches.Count == 0) break;
-                foreach (Match m in matches)
-                {
-                    Console.Write($"<{m.Value}> ");
-                    line = line.Replace(m.Value, $"x{nodeIndex}");
-                    ++nodeIndex;
-                }
-                Console.WriteLine();
-                Console.WriteLine("reduced " + line);
-            }
-
-            return null;
-
-        }
-
-
-
     }
 }

@@ -18,6 +18,11 @@
     - perform dihedral actions on grid (see 2020 Day 20)
     - abstract patterns: see 2020 day 4
     - add manhattan distances, hamming distances
+
+        // todo - nice to have n-tree builder from text cleanly
+    // example probs 2022: 13, 2021 18, 10, 
+
+
     */
     internal abstract class AdventOfCode
     {

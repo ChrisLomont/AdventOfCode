@@ -1,5 +1,5 @@
-﻿using Lomont.AdventOfCode.Utils;
-using System.IO;
+﻿using System.Collections;
+
 
 namespace Lomont.AdventOfCode._2022
 {
@@ -21,8 +21,10 @@ namespace Lomont.AdventOfCode._2022
 
         public override object Run(bool part2)
         {
-            return BFSSoln(part2);
-            //return FloodFillSoln(part2);
+            //var p1 = AStarPath();
+            //return p1.Count == 481;
+            //return BFSSoln(part2);
+            return FloodFillSoln(part2); // draws pretty stuff
         }
 
         long BFSSoln(bool part2)
@@ -239,7 +241,7 @@ namespace Lomont.AdventOfCode._2022
                 var solution2 = Solution(bestStart);
                 Console.WriteLine("Shortest path and best start path");
                 Draw(g, start, end, solution1, solution2);
-                var solution3 = AStarPath(w, h, g, start, end);
+                var solution3 = AStarPath();
                 Console.WriteLine($"Shortest floodfill path {solution1.Count} and shortest A* path {solution3.Count}");
                 Draw(g, start, end, solution1, solution3);
 
@@ -282,10 +284,28 @@ namespace Lomont.AdventOfCode._2022
         }
 
 
-        List<vec3> AStarPath(int w, int h, char[,] g, vec3 start, vec3 end)
+        List<vec3> AStarPath()
         {
             // this method fails to find shortest somehow...
+            var (w, h, g) = CharGrid(); // width, height, char grid
+            vec3 start = new(), end = new();
 
+            // init all grid things, replace S,E with a,z
+            for (var i = 0; i < w; ++i)
+            for (var j = 0; j < h; ++j)
+            {
+                if (g[i, j] == 'S')
+                {
+                    start = new vec3(i, j);
+                    g[i, j] = 'a';
+                }
+
+                if (g[i, j] == 'E')
+                {
+                    end = new vec3(i, j);
+                    g[i, j] = 'z';
+                }
+            }
 
             int Cost(vec3 v)
             {
@@ -296,7 +316,8 @@ namespace Lomont.AdventOfCode._2022
                 return Math.Max(d, 0); // manhattan
             }
 
-            var path = AStar(start, end,
+            // AStar and AStar2 not working... 
+            var path = AStar3(start, end,
                 Cost,
                 (a, b) => 1, // neighbor cost
                 Neighbors // how to get neighbors
@@ -348,6 +369,147 @@ namespace Lomont.AdventOfCode._2022
                 return 0 <= x && 0 <= y && x < w && y < h;
             }
 
+            static List<T> AStar3<T>
+            (
+                T start,
+                T destination,
+                Func<T, int> costEstimate,
+                Func<T, T, int> neighborCost,
+                Func<T, IEnumerable<T>> neighbors 
+                )
+            {
+                //----------------------
+                var closed = new HashSet<T>();
+                var queue = new PriorityQueue<Path<T>,int>();
+                queue.Enqueue(new Path<T>(start),0);
+
+                while (queue.Count>0)
+                {
+                    var path = queue.Dequeue();
+                    if (closed.Contains(path.LastStep))
+                        continue;
+                    if (path.LastStep.Equals(destination))
+                    {
+                        var ans = new List<T>();
+                        ans.AddRange(path);
+                        ans.Reverse();
+                        Console.WriteLine($"Solution length {ans.Count - 1}");
+                        return ans;
+                    }
+
+                    closed.Add(path.LastStep);
+                    foreach (T n in neighbors(path.LastStep))
+                    {
+                        var d = neighborCost(path.LastStep, n);
+                        if (n!.Equals(destination))
+                            d = 0;
+                        var newPath = path.AddStep(n, d);
+                        queue.Enqueue(newPath, newPath.TotalCost + costEstimate(n));
+                    }
+                }
+                return null;
+            }
+
+            static List<T> AStar2<T>(
+                T start,
+                T goal,
+                Func<T, int> costEstimate, // heuristic: estimate cost from n to goal
+                Func<T, T, int> neighborCost, // cost from src->dst
+                Func<T, IEnumerable<T>> neighbors // get neighbors of given node
+            ) where T : IEquatable<T>
+            {
+                // track best parent to reconstruct path
+                Dictionary<T, T> cameFrom = new();
+
+                //let the openList equal empty list of nodes
+                var openList = new List<(T node, int score)>();
+                //let the closedList equal empty list of nodes
+                var closedList = new HashSet<T>();
+                // Add the start node
+                // put the startNode on the openList (leave it's f at zero)
+                openList.Add((start,0));
+
+                // scores:
+                Dictionary<T, int> f = new();
+                Dictionary<T, int> g = new();
+                Dictionary<T, int> h = new();
+
+                int pass = 0;
+                // Loop until you find the end
+                while (openList.Any())
+                {
+                    pass++;
+                    if ((pass % 100) == 0) 
+                        Console.WriteLine($"{pass}: {openList.Count} {closedList.Count}");
+                    // Get the current node
+                    // let the currentNode equal the node with the least f value
+                    var min = openList.Min(p=>p.score);
+                    var current = openList.First(p => p.score == min);
+                    
+                    // remove the currentNode from the openList
+                    openList.Remove(current);
+                    // add the currentNode to the closedList
+                    closedList.Add(current.node);
+
+
+                    // Found the goal
+                    //    if currentNode is the goal
+                    //        Congratz! You've found the end! Backtrack to get path
+                    if (current.node.Equals(goal))
+                    {
+                        return ReconstructPath(goal);
+                    }
+                    // Generate children, loop over them
+                    foreach (var child in neighbors(current.node))
+                    { // https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
+                        // Child is on the closedList
+                        if (closedList.Contains(child))
+                            continue;
+                        // Create the f, g, and h values
+                        //        child.g = currentNode.g + distance between child and current
+                        //        child.h = distance from child to end
+                        //        child.f = child.g + child.h
+                        if (!g.ContainsKey(child)) g[child] = 0;
+                        if (!h.ContainsKey(child)) h[child] = 0;
+                        if (!f.ContainsKey(child)) f[child] = 0;
+                        //if (!g.ContainsKey(current.node)) g[current.node] = int.MaxValue/2; // inf
+                        g[child] = current.score/* g[current.node] */+ neighborCost(current.node, child);
+                        h[child] = costEstimate(child);
+                        f[child] = g[child] + h[child];
+
+                        // Child is already in openList
+                        var exists = openList.Any(c=>c.node.Equals(child));
+                        //        if child.position is in the openList's nodes positions
+                        //            if the child.g is higher than the openList node's g
+                        //                continue to beginning of for loop
+                        if (exists && g[child] > openList.First(c=>c.node.Equals(child)).score)
+                            continue;
+
+                        cameFrom[child] = current.node;
+
+                        // Add the child to the openList
+                        openList.Add((child, f[child]));
+                    }
+                }
+
+                    throw new Exception();
+
+                    List<T> ReconstructPath(T current)
+                    {
+                        var path = new List<T> { current };
+                        while (cameFrom.ContainsKey(current))
+                        {
+                            current = cameFrom[current];
+                            path.Add(current);
+                        }
+
+                        path.Reverse();
+                        return path;
+                    }
+
+            }
+
+
             static List<T> AStar<T>(
                 T start,
                 T goal,
@@ -365,7 +527,7 @@ namespace Lomont.AdventOfCode._2022
                 // The set of discovered nodes that may need to be (re-)expanded.
                 // Initially, only the start node is known.
                 // This is usually implemented as a min-heap or priority queue rather than a hash-set.
-                var openSet = new Bob<T>();
+                var openSet = new Priority<T>();
                 openSet.Enqueue(start, h(start));
 
                 // For node n, cameFrom[n] is the node immediately preceding it on the cheapest path from start
@@ -384,7 +546,7 @@ namespace Lomont.AdventOfCode._2022
                 {
                     // This operation can occur in O(Log(N)) time if openSet is a min-heap or a priority queue
                     var current = openSet.Dequeue();
-                    if (current.Equals(goal)) // // current = the node in openSet having the lowest fScore[] value
+                    if (current.Equals(goal)) // current = the node in openSet having the lowest fScore[] value
                     {
                         Console.WriteLine($"Solved! {fScore[goal]}");
                         return ReconstructPath(current);
@@ -401,6 +563,7 @@ namespace Lomont.AdventOfCode._2022
                             cameFrom[neighbor] = current;
                             gScore[neighbor] = tentativeGScore;
                             fScore[neighbor] = tentativeGScore + h(neighbor);
+                            //if (neighbor.Equals(goal)) fScore[neighbor] = 0; // Lomont added
                             if (!openSet.Contains(neighbor))
                                 openSet.Enqueue(neighbor, h(neighbor));
                         }
@@ -425,8 +588,58 @@ namespace Lomont.AdventOfCode._2022
             }
 
         }
-        class Bob<T>
+
+        class Path<T> :IEnumerable<T>
         {
+            // https://gist.github.com/THeK3nger/7734169
+            public T LastStep;
+
+            public int TotalCost = 0;
+
+            public Path(T node, Path<T>? prev, int cost)
+            {
+                LastStep = node;
+                this.prev = prev;
+                TotalCost = cost;
+
+            }
+
+            Path<T>? prev;
+
+            public Path(T node) : this(node, null, 0)
+            {
+            }
+            public Path<T> AddStep(T step, int stepCost)
+            {
+                return new Path<T>(step, this, TotalCost + stepCost);
+            }
+
+            /// <summary>
+            /// Gets the enumerator.
+            /// </summary>
+            /// <returns>The enumerator.</returns>
+            public IEnumerator<T> GetEnumerator()
+            {
+                for (Path<T> p = this; p != null; p = p.prev)
+                    yield return p.LastStep;
+            }
+
+            /// <summary>
+            /// Gets the enumerator.
+            /// </summary>
+            /// <returns>The enumerator.</returns>
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this.GetEnumerator();
+            }
+        }
+
+        class Priority<T>
+        {
+#if false
+            List<(T, int)> openList = new();
+#else
+
             PriorityQueue<T, int> openSet = new ();
             HashSet<T> hashSet = new HashSet<T>(); // track things in openSet
 
@@ -451,6 +664,7 @@ namespace Lomont.AdventOfCode._2022
 
 
             public int Count => openSet.Count;
+#endif
 
         }
 
