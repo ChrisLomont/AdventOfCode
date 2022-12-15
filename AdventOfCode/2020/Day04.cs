@@ -5,9 +5,8 @@ namespace Lomont.AdventOfCode._2020
 {
     internal class Day04 : AdventOfCode
     {
-        // 2020 Day 4 part 1: 237 in 687571 us
-        // 2020 Day 4 part 2: 237 in 444270.9 us
-
+        //2020 Day 4 part 1: 237 in 8148.5 us
+        //2020 Day 4 part 2: 172 in 6695.1 us
         // todo - may be some nicer parsing tricks to abstract out
 
         public override object Run(bool part2)
@@ -35,7 +34,9 @@ namespace Lomont.AdventOfCode._2020
             }
             if (ps != "") 
                 count += Valid(ps) ? 1 : 0;
-            
+
+            return count;
+
             bool Valid(string ps)
             {
                 var w = Split(ps);
@@ -50,14 +51,36 @@ namespace Lomont.AdventOfCode._2020
 
             bool Valid2(List<string> w)
             {
+                var t= "byrcidecleyrhclhgtiyrpid";
+                for (var i = 0; i < t.Length; i += 3)
+                {
+                    var b = t[i..(i + 3)];
+                    var c = w.Count(t => t.StartsWith(b));
+                    if (c > 1)
+                        return false;
+                }
+
+                foreach (var pre in w)
+                {
+                    if (pre[3] != ':') 
+                        return false;
+                    var p = pre[0..3];
+                    var i = t.IndexOf(p);
+                    if (i < 0 || ((i%3)!=0))
+                        return false;
+                }
+
+
                 var ok = true;
                 ok &= Match("byr", s => int.TryParse(s, out var n1) && 1920 <= n1 && n1 <= 2002);
                 ok &= Match("iyr", s => int.TryParse(s, out var n1) && 2010 <= n1 && n1 <= 2020);
                 ok &= Match("eyr", s => int.TryParse(s, out var n1) && 2020 <= n1 && n1 <= 2030);
                 ok &= Match("hgt", Ht);
-                ok &= Match("hcl", s => Regex.IsMatch(s,@"#[0-9a-f]{6}"));
-                ok &= Match("ecl", s => Regex.IsMatch(s,"(amb|blu|brn|gry|grn|hzl|oth)"));
-                ok &= Match("pid", s => Regex.IsMatch(s, "\\d{9}"));
+                ok &= Match("hcl", s => Regex.IsMatch(s,@"^#[0-9a-f]{6}$"));
+                ok &= Match("ecl", s => Regex.IsMatch(s,"^(amb|blu|brn|gry|grn|hzl|oth)$"));
+                ok &= Match("pid", s => Regex.IsMatch(s, "^\\d{9}$"));
+
+                return ok;
 
                 bool Ht(string s)
                 {
@@ -77,7 +100,6 @@ namespace Lomont.AdventOfCode._2020
 
 
 
-                return ok;
 
                 bool Match(string pref, Func<string,bool> f)
                 {
@@ -86,13 +108,13 @@ namespace Lomont.AdventOfCode._2020
                         return false;
                     var s = q[4..];
 
-                    if (f(s)) return true;
+                    if (f(s)) 
+                        return true;
                     return false;
 
                 }
             }
 
-            return count;
 
 
         }
