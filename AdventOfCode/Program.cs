@@ -14,7 +14,7 @@ using Lomont.AdventOfCode.Utils;
 // RunDays(A,B) to get A through B
 // RunDays(A,B,y1,y2) to get A through B on years y1 through y2
 
-RunDays(23,23, 2020);
+RunDays(19,19, 2020);
 
 //RunDays(1,15, 2020);
 //RunDays(1,5, 2022);
