@@ -1,4 +1,6 @@
-﻿namespace Lomont.AdventOfCode._2020
+﻿using System.Diagnostics.Metrics;
+
+namespace Lomont.AdventOfCode._2020
 {
     internal class Day20 : AdventOfCode
     {
@@ -73,20 +75,27 @@
             // 40 edges, 4 corners, 100 interior
             Console.WriteLine($"{edgeTiles.Count} edges, {cornerTiles.Count} corner,  {interiorTiles.Count} interior");
 
+
+
+
+
             //Dump(cor2);
             //return -2;
             if (!part2)
             {
-                // 64802175715999
+                // example 20899048083289
+                // me 64802175715999
                 return cornerTiles.Select(t => (ulong)t.id).Aggregate(1UL, (a, b) => a * b);
             }
-
+            
             // must build image:
             var sideLen = (int)Math.Sqrt(tiles.Count);
             var (w1,h1) = Size(tiles[0].grid);
             Tile[,] tileImg = new Tile[sideLen, sideLen];
-            
-            char[,] charImg= new char[sideLen * (w1-1)+1+10, sideLen * (h1-1)+1+10];
+
+            // BORDERS NOT PART OF IMAGE!
+            // so each placed tile is w-2 in size
+            char[,] charImg = new char[(w1-2) * sideLen, (h1-2) * sideLen];
 
             for (var j = 0; j < sideLen; ++j)
             for (var i = 0; i < sideLen; ++i)
@@ -154,7 +163,6 @@
             //charImg = Rotate90(charImg);
             //charImg = Rotate90(charImg);
             Dump(charImg,noComma:true);
-            return -1;
 
             // now do same on large image, match pattern
 
@@ -169,51 +177,77 @@
                     " #  #  #  #  #  #   ",
                 });
 
-            long count = 0;
+            HashSet<(int, int)> hits = new HashSet<(int, int)>();
             for (var r = 0; r < 8; ++r)
             {
-                count += Matches(charImg);
+                var cHits = Matches(charImg);
+                Console.WriteLine("Match count " + cHits.Count);
+                foreach (var lst in cHits)
+                foreach (var v in lst)
+                    hits.Add(v);
+                
                 charImg = Rotate90(charImg);
                 if (r == 3)
                     charImg = Flip(charImg);
             }
 
-            return count;
+            var countSq = 0;
+            Apply(charImg, (i, j, v) =>
+                {
+                    if (v == '#') ++countSq;
 
-/*
+                    return v;
+                }
+            );
+
+            return countSq- hits.Count;
+
+            /*
 
 
 
 
- */
+             */
 
-            long Matches(char[,] g)
+
+            //get matches. Each is list of cells with monster in it
+            List<List<(int i, int j)>> Matches(char[,] g)
             {
                 var (pw, ph,pg) = pattern;
                 var count = 0;
+                var hits = new List<List<(int,int)>>();
                 Apply(g, (i, j, v) =>
                 {
                     var ok = true;
+                    var lst = new List<(int i, int j)>();
                     Apply(pg, (i1, j1, v1) =>
                         {
                             var gset = Get(g, i + i1, j + j1, ' ') == '#';
                             var pset = Get(pg, i1, j1, ' ') == '#';
                             if (pset && !gset) 
                                 ok = false;
+                            if (pset && gset)
+                                lst.Add((i+i1,j+j1));
                             return v1;
                         }
                         );
-                    if (ok) 
+                    if (ok)
+                    {
                         count++;
+                        Trace.Assert(lst.Count == 15);
+                        hits.Add(lst);
+                    }
+
                     return v;
                 });
-                return count;
+                return hits;
 
             }
 
             void PlaceTile(Tile t, int i, int j)
             {
-                Console.WriteLine($"Placing {i},{j}: N{Hash(t,Dir.N)} S{Hash(t, Dir.S)} E{Hash(t, Dir.E)} W{Hash(t, Dir.W)} ");
+                //Console.WriteLine($"Placing {i},{j}: N{Hash(t,Dir.N)} S{Hash(t, Dir.S)} E{Hash(t, Dir.E)} W{Hash(t, Dir.W)} ");
+                //Dump(t.grid, noComma:true);
 
                 t.placed = true;
                 Trace.Assert(tileImg[i,j] == null);
@@ -222,7 +256,13 @@
                 // copy in chars
                 Apply(t.grid, (i1, j1, v) =>
                 {
-                    charImg[i*(w1+50)+i1,j*(h1+2)+j1] = v;
+                    if (i1 != 0 && j1 != 0 && i1 != w1 - 1 && j1 != h1 - 1)
+                    { // crop corners
+
+                        var (xx, yy) = ((w1-2)*i +i1-1, (h1-2)* j  + j1-1);
+                        charImg[xx, yy] = v;
+                    }
+
                     return v;
                 });
 
@@ -304,8 +344,8 @@
                 // N S go left to right
                 return dir switch
                 {
-                    Dir.E => HashDir(g,0,0,0,1),
-                    Dir.W => HashDir(g,w-1, 0, 0, 1),
+                    Dir.W => HashDir(g,0,0,0,1),
+                    Dir.E => HashDir(g,w-1, 0, 0, 1),
                     Dir.N => HashDir(g, 0, 0, 1, 0),
                     Dir.S => HashDir(g, 0, h-1, 1, 0),
                     _ => throw new Exception()

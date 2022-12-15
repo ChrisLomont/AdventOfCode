@@ -3,153 +3,97 @@ namespace Lomont.AdventOfCode._2020
 {
     internal class Day23 : AdventOfCode
     {
-        // 36542897
+    //2020 Day 23 part 1: 36542897 in 7353 us
+    //2020 Day 23 part 2: 562136730660 in 1560359.4 us
 
-#if false
-        class Tbl
+        class Cup
         {
-            public Tbl(List<int> start)
-            {
-
-            }
-
-            public int Min()
-            {
-
-            }
-
-            public int Max()
-            {
-
-            }
-
-            public int Add(int n)
-            {
-
-            }
-
-            public int Count =>;
-
-            public int this[int index]
-            {
-                todo;
-            }
-
-            public int IndexOf(int val)
-            {
-
-            }
-
-            public void Remove(int firstIndex, int length)
-            {
-                todo;
-            }
-
+            public Cup? Prev, Next;
+            public int Value;
         }
 
-#endif
         public override object Run(bool part2)
         {
             var order = ReadLines()[0];
-            // clockwise
 
-            //var arr = new Tbl(order.ToCharArray().Select(c => c - '0').ToList()));
-            var arr = order.ToCharArray().Select(c => c - '0').ToList();
-
-            part2 = false;
-            var hi = arr.Max();
-            var lo = arr.Min();
-
+            var startVals = order.ToCharArray().Select(c => c - '0').ToList();
             if (part2)
             {
-                var v = hi + 1;
-                while (arr.Count < 1_000_000)
-                    arr.Add(v++);
+                var next = startVals.Max() + 1;
+                while (startVals.Count < 1_000_000)
+                    startVals.Add(next++);
+            }
+            var size = startVals.Count;
+
+            // array of cups, index [i] is cup with label i
+            // order is determined by double linked list in the nodes
+            var cups = new Cup[size+1];
+            Cup? last = null;
+            foreach (var v in startVals)
+            {
+                var q = new Cup { Prev = last, Value = v };
+                if (last!=null)
+                    last.Next = q;
+                last = q;
+                cups[v] = q;
             }
 
-            var len = arr.Count;
+            // wrap last to first
+            last!.Next = cups[startVals[0]];
+            last.Next.Prev = last;
 
-            var current = arr[0];// first cup is current
+            var cupIndex = startVals[0];
 
             var moves = part2 ? 10_000_000 : 100;
-            for (var i = 0; i < moves; ++i)
+            for (var move = 1; move <= moves; ++move)
             {
-                if ((i%20000) == 0)
-                    Console.WriteLine($"{i+1}/{moves}");
-                var ind= arr.IndexOf(current);
+                var cup = cups[cupIndex];
+                var c1 = cup.Next;
+                var c2 = c1!.Next;
+                var c3 = c2!.Next;
+            
+                // remove 3 items
+                cup.Next = c3!.Next;
+                cup.Next!.Prev = cup;
 
-                // take 3
-                var c1 = arr[(ind + 1) % len];
-                var c2 = arr[(ind + 2) % len];
-                var c3 = arr[(ind + 3) % len];
-
-                var dest = current - 1;
-                if (dest < lo) dest = hi;
-                while (dest ==c1 || dest==c2 || dest == c3)
+                // pick dest index
+                var destIndex = cupIndex;
+                do
                 {
-                    dest--;
-                    if (dest < lo) dest = hi;
-                }
+                    destIndex--;
+                    if (destIndex < 1)
+                        destIndex = size;
+                } while (destIndex == c1.Value || destIndex == c2.Value || destIndex == c3.Value);
 
-#if true
-                // remove 3 at ind+1, insert them at di
-                var di = (arr.IndexOf(dest)+len-2)%len;
-                var k = (ind + 1) % len;
-                while (k != di)
-                {
-                    arr[k] = arr[(k + 3)%len];
-                    k = (k + 1) % len;
-                }
 
-                arr[k] = c1;
-                arr[(k+1)%len] = c2;
-                arr[(k+2)%len] = c3;
-#else
+                // insert cups back right past destIndex
+                var dest = cups[destIndex];
+                c3.Next = dest.Next;
+                c3.Next!.Prev = c3;
+                dest.Next = c1;
+                c1.Prev = dest;
 
-                // remove
-                arr[(ind + 1) % len] = -1;
-                arr[(ind + 2) % len] = -1;
-                arr[(ind + 3) % len] = -1;
-                arr.RemoveAll(c => c == -1);
-                len -= 3;
-
-                // insert
-                var di = (arr.IndexOf(dest)+1)%len;
-                arr.Insert(di++ % len,c1);
-                len++;
-                arr.Insert(di++ % len, c2);
-                len++;
-                arr.Insert(di++ % len, c3);
-                len++;
-#endif
-
-                ind = arr.IndexOf(current);
-                current = arr[(ind + 1) % len];
-
-                //Console.WriteLine($"Cur {current}");
-                //Dump(arr);
-                //Console.WriteLine();
+                cupIndex = cups[cupIndex].Next!.Value;
             }
 
-            if (part2)
+            if (!part2)
             {
-                var ind2 = arr.IndexOf(1);
-                long v1 = arr[(ind2+1)%len];
-                long v2 = arr[(ind2 + 2) % len];
-                return v1 * v2;
-            }
-            else
-            {
-                var ind2 = arr.IndexOf(1);
                 var s = "";
-                for (var i = 0; i < len; ++i)
+                var p = cups[1].Next;
+                while (p != cups[1])
                 {
-                    s += arr[ind2];
-                    ind2 = (ind2 + 1) % len;
+                    s += p!.Value;
+                    p = p.Next;
                 }
 
-                return s[1..];
+                return s; // example 67384529, mine 36542897
             }
+
+            var cup1 = cups[1];
+            var n1 = cup1.Next;
+            var n2 = n1!.Next;
+            var (v1, v2) = ((long)n1.Value, (long)n2!.Value);
+            return v1 * v2;
         }
     }
 }
