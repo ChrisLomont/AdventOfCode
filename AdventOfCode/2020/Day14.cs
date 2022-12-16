@@ -17,7 +17,7 @@
                 }
                 else
                 {
-                    var n = GetNumbers64(line);
+                    var n = Numbers64(line, false);
                     var val = n[1];
                     var addr = n[0];
                     if (!part2)

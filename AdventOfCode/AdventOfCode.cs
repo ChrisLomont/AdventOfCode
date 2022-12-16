@@ -358,10 +358,18 @@
         /// <summary>
         /// Dump enumerable
         /// </summary>
-        public static void Dump<T>(IEnumerable<T> items)
+        public static void Dump<T>(IEnumerable<T> items, bool singleLine = false)
         {
             foreach (var i in items)
-                Console.WriteLine(i);
+            {
+                if (singleLine)
+                {
+                    Console.Write(i+", ");
+                }
+                else
+                    Console.WriteLine(i);
+            }
+            if (singleLine) Console.WriteLine();
         }
 
         /// <summary>
@@ -387,7 +395,13 @@
         static Regex signedNumberRegex = new Regex(@"(\+|-)?\d+");
 
         // read all numbers out of string, ignore other stuff
-        protected List<long> GetNumbers64(string line) => numberRegex.Matches(line).Select(m => long.Parse(m.Value)).ToList();
+        protected List<long> Numbers64(string line, bool allowSigned = true)
+
+        {
+            if (allowSigned)
+                return signedNumberRegex.Matches(line).Select(m => long.Parse(m.Value)).ToList();
+            return numberRegex.Matches(line).Select(m => long.Parse(m.Value)).ToList();
+        }
 
         // read all numbers out of string, ignore other stuff
         protected static List<int> Numbers(string line, bool allowSigned = true)

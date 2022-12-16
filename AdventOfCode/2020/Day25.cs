@@ -26,15 +26,15 @@ namespace Lomont.AdventOfCode._2020
             var doorPublic = 17807724;
             (cardPublic, doorPublic) = (3248366, 4738476);
 
-            Console.WriteLine($"TT {Transform(8,7)} == 5764801");
+            //Console.WriteLine($"TT {Transform(8,7)} == 5764801");
 
             var doorSecret = Crack(doorPublic);
-            Console.WriteLine("Door secret "+ doorSecret);
+            //Console.WriteLine("Door secret "+ doorSecret);
             var cardSecret = Crack(cardPublic);
-            Console.WriteLine("Card secret " + cardSecret);
+            //Console.WriteLine("Card secret " + cardSecret);
 
             var ans = Transform(cardSecret, doorPublic);
-            Console.WriteLine("CC "+ans);
+            //Console.WriteLine("CC "+ans);
 
             return ans; // 18293391
 

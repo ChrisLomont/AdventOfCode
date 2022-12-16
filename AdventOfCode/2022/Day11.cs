@@ -70,7 +70,7 @@ Monkey 4:
 
                 return new Monkey
                 {
-                    items = GetNumbers64(b[1]).Select(t => (long)t).ToList(),
+                    items = Numbers64(b[1], false).Select(t => (long)t).ToList(),
                     op = (ops[5], ops[4]) switch
                     {
                         ("old", "*") => t => t * t,

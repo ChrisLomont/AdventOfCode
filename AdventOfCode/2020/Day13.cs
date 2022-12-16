@@ -74,7 +74,7 @@ namespace Lomont.AdventOfCode._2020
 
                 // get pairs (period,delay)
                 var l2 = lines[1].Replace("x", "0");
-                var pairs = GetNumbers64(l2).Select((v, i) => (v, (long)i)).Where(q => q.v != 0).ToList();
+                var pairs = Numbers64(l2,false).Select((v, i) => (v, (long)i)).Where(q => q.v != 0).ToList();
                 //pairs.Reverse();
                 // pairs are form (bus # prime, delta)
 

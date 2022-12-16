@@ -35,7 +35,7 @@ namespace Lomont.AdventOfCode._2020
                 else if (String.IsNullOrEmpty(line1))
                 {
                     var t = MakeRegex();
-                    Console.WriteLine("Reg: "+t);
+                    //Console.WriteLine("Reg: "+t);
                     reg = new Regex("^"+t+"$"); // match start to end
                 }
                 else 

@@ -73,7 +73,7 @@ namespace Lomont.AdventOfCode._2020
                 ).ToList();
 
             // 40 edges, 4 corners, 100 interior
-            Console.WriteLine($"{edgeTiles.Count} edges, {cornerTiles.Count} corner,  {interiorTiles.Count} interior");
+            //Console.WriteLine($"{edgeTiles.Count} edges, {cornerTiles.Count} corner,  {interiorTiles.Count} interior");
 
 
 
@@ -153,16 +153,16 @@ namespace Lomont.AdventOfCode._2020
 
             Apply(tileImg, (i, j, v) =>
             {
-                Console.Write(v.id+ " ");
+                //Console.Write(v.id+ " ");
                 return v;
             });
-            Console.WriteLine();
+            //Console.WriteLine();
         
 
             //charImg = Rotate90(charImg);
             //charImg = Rotate90(charImg);
             //charImg = Rotate90(charImg);
-            Dump(charImg,noComma:true);
+            //Dump(charImg,noComma:true);
 
             // now do same on large image, match pattern
 
@@ -181,7 +181,7 @@ namespace Lomont.AdventOfCode._2020
             for (var r = 0; r < 8; ++r)
             {
                 var cHits = Matches(charImg);
-                Console.WriteLine("Match count " + cHits.Count);
+                //Console.WriteLine("Match count " + cHits.Count);
                 foreach (var lst in cHits)
                 foreach (var v in lst)
                     hits.Add(v);

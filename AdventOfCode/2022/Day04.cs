@@ -7,7 +7,7 @@
             long score = 0;
             foreach (var line in ReadLines())
             {
-                var n = GetNumbers64(line);
+                var n = Numbers64(line, false);
                 var (a1,a2,b1,b2) = (n[0], n[1], n[2], n[3]);
 
 

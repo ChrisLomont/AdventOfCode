@@ -4,8 +4,17 @@ namespace Lomont.AdventOfCode._2019
     {
         public override object Run(bool part2)
         {
-            throw new NotImplementedException("Year 2019, day 05 not implemented");
-            return 0;
+            // 5182797
+            // 12077198
+
+            var command = part2 ? 5 : 1;
+
+            var lines = ReadLines();
+            var prog = Numbers64(lines[0]);
+            List<long> output = new();
+
+            var mem = Day02.RunIntCode(prog, new List<int> { command }, output.Add);
+            return output.Last();
         }
     }
 }
