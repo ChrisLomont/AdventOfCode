@@ -5,7 +5,7 @@
 //Utils.MakeYearFiles(2020, AdventOfCode.path);
 //RunDays(1, 25, 2019);
 
-//Set<int>.TestSet();
+//Memoizer.Test();
 //return;
 
 // call RunDays() to get all,
@@ -18,7 +18,7 @@
 //RunDays(9,9, 2019);
 //RunDays(25, 25, 2019);
 
-RunDays(16, 16, 2022);
+RunDays(17, 17, 2022);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)

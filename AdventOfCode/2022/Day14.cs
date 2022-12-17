@@ -39,12 +39,13 @@ namespace Lomont.AdventOfCode._2022
             // picking numbers here to make it wide enough killed me timewise - kept getting
             // items falling off left/right, so not filling
             var mxx = Math.Max(del.x, del.y);
-            var w = 12 * mxx;
+            var scale = 12;//part2 ? 12 : 4;
+            var w = scale * mxx;
             var h = del.y+3;
             var c = new char[w,h];
             Apply(c, (i, j, v) => '.');
 
-            var dx = (max+min).x/2-min.x+1 + 6*mxx/2;
+            var dx = (max+min).x/2-min.x+1 + scale*mxx/2;
 
             foreach (var p in paths)
             {
@@ -62,9 +63,6 @@ namespace Lomont.AdventOfCode._2022
                 var p2 = new vec3(w-1, h - 1);
                 DDA.Dim2(p1.x, p1.y, p2.x, p2.y, (i, j) => c[i, j] = 'X');
             }
-
-
-            //Dump(c,noComma:true);
 
             // time
             int count = 0;
@@ -115,6 +113,11 @@ namespace Lomont.AdventOfCode._2022
                 }
             }
 
+            //if (!part2)
+            //    DumpMap(w, h, c);
+            //return -123;
+
+
             if (part2)
             {
                 count = 0;
@@ -132,6 +135,34 @@ namespace Lomont.AdventOfCode._2022
 
             if (part2) return count;//19179 not it
             return count;
+
+            void DumpMap(int w, int h, char[,] g)
+            {
+                // trim
+                var minX = int.MaxValue;
+                var maxX = int.MinValue;
+                Apply(g, (i, j, v) =>
+                {
+                    if (v != '.')
+                    {
+                        minX = Math.Min(minX, i);
+                        maxX = Math.Max(maxX, i);
+                    }
+
+                    return v;
+                });
+                Console.WriteLine($"min max {minX} {maxX}");
+                for (var j = 0; j < h; ++j)
+                {
+                    for (var i = minX - 5; i <= maxX + 5; ++i)
+                    {
+                        Console.Write(g[i,j]);
+                    }
+
+                    Console.WriteLine();
+                }
+            }
+
         }
     }
 }
