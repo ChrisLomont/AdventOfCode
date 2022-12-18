@@ -1,9 +1,403 @@
 using System.Data;
+using System.Linq;
+using System.Net.Mail;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Channels;
+using System.Xml.Serialization;
 
 namespace Lomont.AdventOfCode._2019
 {
-   
+    // bot to play game
+    class Bot
+    {
+        Random rand = new Random();
+
+        Room? lastRoom = null;
+        Room? curRoom = null;
+        List<Room> rooms = new();
+
+        string lastMove = "";
+        HashSet<string> itemsTaken = new();
+
+        int turn = 0;
+
+        string preFinalRoomName = "Security Checkpoint";
+        string finalRoomName = "Pressure Sensitive Floor";
+
+
+        // queue of moves, played from the top
+        // play take moves first
+        Queue<string> takeMoves = new();
+        Queue<string> moves = new();
+
+        class Room
+        {
+            public string name;
+            public Dictionary<string, Room?> dirs = new();
+            public List<string> items = new();
+            public override string ToString() => name;
+        }
+
+        #region Mapping
+        // learn map
+        Dictionary<(string src, string dst), string> map = new();
+        Dictionary<(string src, string dir), Room> toRoom = new ();
+        void Map(Room prev, Room nbr, string dir)
+        {
+            if ("northsoutheastwest".Contains(dir) && lastMove.Length >= 4)
+            {
+                var key = (prev.name, nbr.name);
+                if (!map.ContainsKey(key))
+                {
+                    map.Add(key, dir);
+                    toRoom.Add((prev.name, dir), nbr);
+                }
+                else
+                    Trace.Assert(map[key] == dir);
+            }
+        }
+        // things left open at the moment
+        List<(string name, string dir)> Unexplored()
+        {
+            var ans = new List<(string name, string dir)>();
+            foreach (var r in rooms)
+            {
+                foreach (var dir in r.dirs)
+                {
+                    bool found = false;
+                    foreach (var p in map)
+                    {
+                        found |= p.Key.src == r.name && p.Value == dir.Key;
+                    }
+
+                    if (!found)
+                        ans.Add((r.name, dir.Key));
+                }
+            }
+
+            return ans;
+        }
+        #endregion
+
+
+        void ProcessRoom(List<string> lines)
+        {
+            Room r = null;
+            var inDoors = false;
+            var inItems = false;
+
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrEmpty(line)) continue;
+                var placeMatch = Regex.Match(line, @"== (?<place>[a-zA-Z- ]+) ==");
+                if (placeMatch.Success)
+                {
+                    var name = placeMatch.Groups["place"].Value;
+                    if (name == finalRoomName)
+                        Console.WriteLine("YAY!");
+                    r = rooms.FirstOrDefault(q => q.name == name);
+                    if (r == null)
+                    {
+                        r = new Room { name = name };
+                        rooms.Add(r);
+                    }
+                }
+                else if (line.Contains("=="))
+                    Console.WriteLine("ERROR!");
+
+                var doorMatch = Regex.Match(line, @"Doors here lead");
+                if (doorMatch.Success)
+                {
+                    inDoors = true;
+                    inItems = false;
+                    continue;
+                }
+
+                var itemsMatch = Regex.Match(line, @"Items here");
+                if (itemsMatch.Success)
+                {
+                    inDoors = false;
+                    inItems = true;
+                    continue;
+                }
+
+                if (line.Contains("Command?"))
+                    break;
+
+                if (line.StartsWith("-"))
+                {
+
+                    var itemMatch = Regex.Match(line, @"\- (?<item>[a-zA-Z0-9 ]+)");
+                    if (inItems && itemMatch.Success)
+                    {
+                        var item = itemMatch.Groups["item"].Value.Trim();
+                        if (!r.items.Contains(item))
+                        {
+                            if (
+                                item != "infinite loop" // do not take this - it infinite loops
+                                && item != "giant electromagnet" // you cannot move
+                                && item != "molten lava"
+                                && item != "escape pod"
+                                &&
+                                item !=
+                                "photons" // You take the photons. It is suddenly completely dark! You are eaten by a Grue!
+                            )
+                            {
+                                r.items.Add(item);
+                                takeMoves.Enqueue("take " + item);
+                                itemsTaken.Add(item); // not quite true - will take soon
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    // 20 rooms, 8 items can take (5 cannot?)
+
+                    var dirMatch = Regex.Match(line, @"\- (?<dir>(north|south|east|west))");
+                    if (inDoors && dirMatch.Success)
+                    {
+                        var dir = dirMatch.Groups["dir"].Value;
+                        if (!r.dirs.ContainsKey(dir))
+                            r.dirs.Add(dir, null);
+                        continue;
+                    }
+
+                    Console.WriteLine("ERROR!");
+
+                } // line start
+            }
+
+            curRoom = r;
+        }
+#if true
+        
+        // try to find rooms, fill in moves
+        bool MovesToNearestUnexplored(Room start)
+        {
+            HashSet<Room> closed = new();
+
+            // parent[room] = where to come from
+            Dictionary<Room, Room> parent = new();
+
+
+            var frontier = new Queue<Room>();
+            frontier.Enqueue(start);
+            while (frontier.Any())
+            {
+                var r = frontier.Dequeue();
+                closed.Add(r);
+
+                foreach (var dir in r.dirs)
+                {
+                    var key = (r.name, dir.Key);
+                    if (!toRoom.ContainsKey(key))
+                    {
+                        // unexplored - go here, take this dir
+                        var ans = new List<string>();
+                        ans.Add(dir.Key);
+
+                        while (parent.ContainsKey(r))
+                        {
+                            var p = parent[r];
+                            var d = map[(p.name, r.name)];
+                            ans.Add(d);
+                            r = p;
+                        }
+
+                        ans.Reverse();
+                        foreach (var a in ans)
+                            moves.Enqueue(a);
+                        return true;
+
+                    }
+                    else
+                    {
+                        var child = toRoom[key];
+                        if (!closed.Contains(child))
+                        {
+                            parent.Add(child, r);
+                            frontier.Enqueue(child);
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+#endif
+
+        void Search()
+        {
+            if (moves.Any()) return; // nothing to do
+
+            if (curRoom != null)
+            {
+                // explore unexplored, unless it is the final output from 
+                // preFinalRoomName
+                var unexplored = Unexplored();
+                var lastOne = unexplored.Where(n => n.name == preFinalRoomName).Count() == 1;
+                if (unexplored.Any() && !lastOne)
+                {
+                    if (MovesToNearestUnexplored(curRoom))
+                        return;
+                }
+                // find something unexplored to do
+                // todo - use MovesToNearestUnexplored
+
+                // prefer unexplored
+                if (!curRoom.name.Contains(preFinalRoomName)) // if take unexplored, get into if loop
+                foreach (var dir in curRoom.dirs)
+                    if (!toRoom.ContainsKey((curRoom.name, dir.Key)))
+                    {
+                        moves.Enqueue(dir.Key);
+                        return;
+                    }
+
+                var d = curRoom.dirs.Select(p => p.Key).ToList();
+                if (d.Any())
+                    moves.Enqueue(d[rand.Next(d.Count)]);
+            }
+        }
+
+        string ProcessMoves()
+        {
+
+            string move = "";
+            if (takeMoves.Any())
+                move = takeMoves.Dequeue();
+            else if (moves.Any())
+            {
+                move = moves.Dequeue();
+                lastRoom = curRoom;
+            }
+            else
+                move = "inv";
+            lastMove = move;
+            return move;
+        }
+
+        bool WinSequence()
+        {
+            if (
+                curRoom != null &&
+                itemsTaken.Count == 8 && 
+                curRoom.name == preFinalRoomName && 
+                !Unexplored().Any()
+                )
+            {
+                
+                takeMoves.Clear();
+                moves.Clear();
+                var finalDir = curRoom.dirs.Where(dir => toRoom[(curRoom.name, dir.Key)].name == finalRoomName)
+                    .FirstOrDefault().Key;
+                Trace.Assert(!string.IsNullOrEmpty(finalDir));
+                for (var v = 0; v < 256; ++v)
+                {
+                    Drop(v, true);
+                    moves.Enqueue(finalDir);
+                    Drop(v, false);
+                }
+
+                return true;
+            }
+
+            return false;
+
+            void Drop(int v, bool drop)
+            {
+                int item = 0;
+                var items = itemsTaken.ToList();
+                while (v > 0)
+                {
+                    if ((v & 1) != 0)
+                    {
+                        if (drop) 
+                            moves.Enqueue($"drop {items[item]}");
+                        else
+                            moves.Enqueue($"take {items[item]}");
+                    }
+
+                    v >>= 1;
+                }
+            }
+        }
+
+        // update, return move
+        public string Update(List<string> lines)
+        {
+            ++turn;
+            Console.WriteLine($"TURN {turn}");
+
+            ProcessRoom(lines);
+
+            if ("northsoutheastwest".Contains(lastMove) && lastMove.Length>3)
+            {
+                if (curRoom != null && lastRoom != null && lastRoom != curRoom)
+                {
+                    Map(lastRoom, curRoom, lastMove);
+                }
+            }
+
+
+            if (itemsTaken.Count == 8 && rooms.Count == 20)
+            {
+                // time to win, find room
+            }
+
+            
+            if (!WinSequence())
+                Search();
+
+            var show = true;
+            if (show)
+            {
+                Console.WriteLine(
+                    $"Rooms seen {rooms.Count}, items {rooms.Sum(r => r.items.Count)}, map {map.Count}, unexplored {Unexplored().Count}");
+                foreach (var r1 in rooms)
+                    Console.Write(r1.name + ", ");
+                Console.WriteLine();
+                foreach (var item in itemsTaken)
+                    Console.Write(item + ", ");
+                Console.WriteLine();
+            }
+
+
+            return ProcessMoves();
+        }
+
+        /*
+
+    Handle case:
+
+== Pressure-Sensitive Floor ==
+Analyzing...
+Doors here lead:
+- west
+A loud, robotic voice says "Alert! Droids on this ship are lighter than the detected value!" and you are ejected back to the checkpoint.
+== Security Checkpoint ==
+In the next room, a pressure-sensitive floor will verify your identity.
+Doors here lead:
+- north
+- east
+Command?
+         */
+
+
+        /* string forms:
+
+            "== <name place> =="
+        "Doors here lead:"
+        "- north"
+        "- east"..
+
+            "Items here:
+        "- weather machine"
+        "Command?"
+
+         */
+    }
+
 
     internal class Day25 : AdventOfCode
     {
@@ -262,124 +656,12 @@ namespace Lomont.AdventOfCode._2019
             return -100;
         }
 
-    class Bot
-    {
-        Random rand = new Random(1234);
-
-        class Room
-        {
-            public string name;
-            public Dictionary<string, Room?> dirs = new();
-            public List<string> items = new();
-            public override string ToString()
-            {
-                return $"{name}: ";
-            }
-        }
-
-        Room lastRoom = null;
-        string lastMove = "";
-        List<Room> rooms = new();
-
-        Queue<string> moves = new();
-        // update, return move
-        public string Update(List<string> lines)
-        {
-            if (moves.Any())
-                return moves.Dequeue();
-
-            //var lines = next.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                var inDoors = false;
-            var inItems = false;
-            string roomName = "<unknown>";
-            Room r = null;
-            foreach (var line in lines)
-            {
-                if (string.IsNullOrEmpty(line)) continue;
-                var placeMatch = Regex.Match(line,@"== (?<place>[a-zA-Z ]+) ==");
-                if (placeMatch.Success)
-                {
-                    var name = placeMatch.Groups["place"].Value;
-                    r = rooms.FirstOrDefault(q => q.name == name);
-                    if (r == null)
-                    {
-                        r = new Room{name =name};
-                    }
-                    continue;
-                }
-
-                var doorMatch = Regex.Match(line,@"Doors here lead");
-                if (doorMatch.Success)
-                {
-                    inDoors = true;
-                    inItems = false;
-                    continue;
-                }
-
-                var itemsMatch = Regex.Match(line, @"Items here");
-                if (itemsMatch.Success)
-                {
-                    inDoors = false;
-                    inItems = true;
-                    continue;
-                }
-
-                if (line.Contains("Command?"))
-                    break;
-
-                var itemMatch = Regex.Match(line, @"\- (?<item>[a-zA-Z ]+)");
-                if (inItems && itemMatch.Success)
-                {
-                    var item = itemMatch.Groups["item"].Value.Trim();
-                    if (!r.items.Contains(item))
-                    {
-                        r.items.Add(item);
-                        moves.Enqueue("take " + item);
-                    }
-                    continue;
-                }
-
-                var dirMatch = Regex.Match(line,@"\- (?<dir>(north|south|east|west))");
-                if (inDoors && dirMatch.Success)
-                {
-                    var dir = dirMatch.Groups["dir"].Value;
-                    if (!r.dirs.ContainsKey(dir))
-                        r.dirs.Add(dir,null);
-                }
-            }
-
-            if (r != null)
-                lastRoom = r;
-
-            Console.WriteLine($"Rooms seen {rooms.Count}, items {rooms.Sum(r => r.items.Count)}");
-            if (lastRoom != null)
-            {
-                var d = lastRoom.dirs.Select(p => p.Key).ToList();
-                if (d.Any())
-                    return d[rand.Next(d.Count)];
-            }
-
-            return "inv";
-        }
-
-        /* string forms:
-         
-            "== <name place> =="
-        "Doors here lead:"
-        "- north"
-        "- east"..
-
-            "Items here:
-        "- weather machine"
-        "Command?"
-         
-         */
-    }
 
 
-        // Define other methods and classes here
+    // Define other methods and classes here
         public void RunRooms(Computer comp, List<string> commands)
         {
+            var fg = Console.ForegroundColor;
             var bot = new Bot();
             var rep = new[]
             {
@@ -395,7 +677,13 @@ namespace Lomont.AdventOfCode._2019
                 Console.Write("INPUT: ");
                 var inp = Console.ReadLine().Trim();
                 if (string.IsNullOrEmpty(inp))
+                {
                     inp = bot.Update(lines);
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(inp);
+                    Console.ForegroundColor = fg;
+                }
+
                 lines.Clear();
                 Console.WriteLine(inp);
 
@@ -412,8 +700,11 @@ namespace Lomont.AdventOfCode._2019
                 while (!next.Contains("Command?"))
                 {
                     next = comp.RunString("");
-                    lines.Add(next.Trim());
-                    Console.WriteLine(next);
+                    if (next != "\n")
+                    {
+                        lines.Add(next.Trim());
+                        Console.WriteLine(next.Trim());
+                    }
 
                     //next.Dump();
                     //str = "";
@@ -436,8 +727,6 @@ namespace Lomont.AdventOfCode._2019
         public override object Run(bool part2)
         {
             Run2(part2);
-            //return -1203;
-            // a soln https://topaz.github.io/paste/#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
 
             // commands - each ends with \n ASCII n
             // north, south, east, west
