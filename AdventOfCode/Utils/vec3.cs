@@ -1,8 +1,13 @@
-﻿namespace Lomont.AdventOfCode.Utils;
+﻿using System.Numerics;
+
+namespace Lomont.AdventOfCode.Utils;
 
 public class vec3 : IEquatable<vec3>
 {
     public int AbsMax => Math.Max(Math.Abs(x), Math.Max(Math.Abs(y), Math.Abs(z)));
+
+    public static vec3 MaxValue = new vec3(int.MaxValue, int.MaxValue, int.MaxValue);
+    public static vec3 MinValue = new vec3(int.MinValue, int.MinValue, int.MinValue);
 
     public vec3(int x=0, int y=0, int z=0)
     {
