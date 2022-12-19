@@ -16,9 +16,9 @@
 //RunDays(2, 2, 2019);
 //RunDays(5, 5, 2019);
 //RunDays(9,9, 2019);
-//RunDays(25, 25, 2019);
+RunDays(25, 25, 2019);
 
-RunDays(18, 18, 2022);
+//RunDays(18, 18, 2022);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)
