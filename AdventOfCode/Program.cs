@@ -13,12 +13,12 @@
 // RunDays(A,B) to get A through B
 // RunDays(A,B,y1,y2) to get A through B on years y1 through y2
 
-RunDays(8, 10, 2019);
+//RunDays(11, 15, 2019);
 //RunDays(5, 5, 2019);
 //RunDays(9,9, 2019);
 //RunDays(25, 25, 2019);
 
-//RunDays(19, 19, 2022);
+RunDays(20, 20, 2022);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)
