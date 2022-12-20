@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-
-namespace Lomont.Formats
+﻿namespace Lomont.Formats
 {
     public static class TreeTextFormatter
     {

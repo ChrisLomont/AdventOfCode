@@ -1,8 +1,4 @@
-﻿
-using System.Runtime.Intrinsics.X86;
-using System.Text;
-
-namespace Lomont.AdventOfCode._2022
+﻿namespace Lomont.AdventOfCode._2022
 {
     // rank1-100: 8:16 to 18:05 for both, 6:06 to 13:07 for first
 

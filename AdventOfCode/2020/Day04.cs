@@ -1,6 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
-
 namespace Lomont.AdventOfCode._2020
 {
     internal class Day04 : AdventOfCode

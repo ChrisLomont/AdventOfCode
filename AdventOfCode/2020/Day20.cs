@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.Metrics;
-
-namespace Lomont.AdventOfCode._2020
+﻿namespace Lomont.AdventOfCode._2020
 {
     internal class Day20 : AdventOfCode
     {

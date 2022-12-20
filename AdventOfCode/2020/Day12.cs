@@ -1,5 +1,3 @@
-using System.Security.AccessControl;
-
 namespace Lomont.AdventOfCode._2020
 {
     internal class Day12 : AdventOfCode

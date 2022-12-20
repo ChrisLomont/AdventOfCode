@@ -1,5 +1,3 @@
-using System.Collections;
-
 namespace Lomont.AdventOfCode._2020
 {
     internal class Day10 : AdventOfCode

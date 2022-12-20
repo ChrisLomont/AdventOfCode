@@ -1,7 +1,3 @@
-using System.Collections;
-using System.IO.MemoryMappedFiles;
-using System.Threading.Channels;
-
 namespace Lomont.AdventOfCode._2020
 {
     internal class Day07 : AdventOfCode

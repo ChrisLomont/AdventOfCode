@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace Lomont.AdventOfCode._2019
 {
     internal class Day04 : AdventOfCode

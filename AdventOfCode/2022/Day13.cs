@@ -1,6 +1,4 @@
 ﻿
-using Lomont.Formats;
-
 namespace Lomont.AdventOfCode._2022
 {
     // done 12:40am ~1840

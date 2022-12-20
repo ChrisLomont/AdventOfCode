@@ -1,6 +1,4 @@
-﻿using System.Net.NetworkInformation;
-
-namespace Lomont.AdventOfCode.Utils
+﻿namespace Lomont.AdventOfCode.Utils
 {
     internal static class Utils
     {

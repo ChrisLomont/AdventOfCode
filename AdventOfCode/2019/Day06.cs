@@ -1,5 +1,3 @@
-using System.Runtime.ConstrainedExecution;
-
 namespace Lomont.AdventOfCode._2019
 {
     internal class Day06 : AdventOfCode

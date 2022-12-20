@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace Lomont.AdventOfCode.Utils;
+﻿namespace Lomont.AdventOfCode.Utils;
 
 public class vec3 : IEquatable<vec3>
 {

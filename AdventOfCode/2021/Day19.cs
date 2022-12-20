@@ -2,8 +2,6 @@
 //  383
 // 9854
 
-using Lomont.AdventOfCode.Utils;
-
 namespace Lomont.AdventOfCode._2021
 {
     internal class Day19 : AdventOfCode

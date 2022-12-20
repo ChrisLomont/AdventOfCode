@@ -1,6 +1,4 @@
-﻿using Lomont.AdventOfCode.Utils;
-
-namespace Lomont.AdventOfCode._2021
+﻿namespace Lomont.AdventOfCode._2021
 {
     internal class Day01 : AdventOfCode
     {

@@ -1,6 +1,4 @@
 ﻿
-using Lomont.AdventOfCode.Utils;
-
 namespace Lomont.AdventOfCode._2021
 {
     //2021 Day 22 part 1: 615869 in 47912.2 us

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Lomont.AdventOfCode.Utils
+﻿namespace Lomont.AdventOfCode.Utils
 {
     public class vec4 : IEquatable<vec4>
     {
