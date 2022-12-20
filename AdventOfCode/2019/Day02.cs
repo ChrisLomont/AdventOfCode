@@ -5,7 +5,7 @@ namespace Lomont.AdventOfCode._2019
         // 7210630
         // 3892
 
-        public static Dictionary<long, long> RunIntCode(List<long> prog, List<int>? input = null, Action<long>?output =null)
+        public static Dictionary<long, long> RunIntCode(List<long> prog, List<long>? input = null, Action<long>?output =null)
         {
             int inputIndex = 0;
 
@@ -18,7 +18,7 @@ namespace Lomont.AdventOfCode._2019
                 output);
         }
 
-        public static Dictionary<long, long> RunIntCode(List<long> prog, Func<int> getInput,
+        public static Dictionary<long, long> RunIntCode(List<long> prog, Func<long> getInput,
             Action<long>? output = null)
         {
             var c = new IntCode(prog, getInput, output);
@@ -27,12 +27,12 @@ namespace Lomont.AdventOfCode._2019
 
         public class IntCode
         {
-            Func<int> getInput;
+            Func<long> getInput;
             Action<long> output;
 
             public IntCode(
                 List<long> prog,
-                Func<int> getInput,
+                Func<long> getInput,
                 Action<long>? output = null)
             {
                 output ??= Console.WriteLine;
@@ -93,7 +93,11 @@ namespace Lomont.AdventOfCode._2019
             }
 
             bool done = false;
-            // do one step, return true if done
+            /// <summary>
+            /// do one step, return true if done
+            /// </summary>
+            /// <returns></returns>
+            /// <exception cref="Exception"></exception>
             public bool Step()
             {
                 if (done) return done;

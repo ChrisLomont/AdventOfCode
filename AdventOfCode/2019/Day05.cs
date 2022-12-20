@@ -13,7 +13,7 @@ namespace Lomont.AdventOfCode._2019
             var prog = Numbers64(lines[0]);
             List<long> output = new();
 
-            var mem = Day02.RunIntCode(prog, new List<int> { command }, output.Add);
+            var mem = Day02.RunIntCode(prog, new List<long> { command }, output.Add);
             return output.Last();
         }
     }

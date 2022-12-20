@@ -9,12 +9,31 @@ public class vec3 : IEquatable<vec3>
     public static vec3 MaxValue = new vec3(int.MaxValue, int.MaxValue, int.MaxValue);
     public static vec3 MinValue = new vec3(int.MinValue, int.MinValue, int.MinValue);
 
+    public static vec3 XAxis = new vec3(1,0,0);
+    public static vec3 YAxis = new vec3(0, 1, 0);
+    public static vec3 ZAxis = new vec3(0, 0, 1);
+    public static vec3 Zero = new vec3(0, 0, 0);
+    public static vec3 One = new vec3(1, 1, 1);
+
     public vec3(int x=0, int y=0, int z=0)
     {
         this.x = x;
         this.y = y;
         this.z = z;
     }
+    public static vec3 operator-(vec3 a)
+    {
+        return -1 * a;
+
+    }
+    public static vec3 operator *(int s, vec3 a)
+    {
+        return new vec3(s * a.x, s * a.y, s * a.z);
+    }
+
+    public static vec3 operator *(vec3 a, int s) => s * a;
+
+    public int ManhattanLength => Math.Abs(x) + Math.Abs(y) + Math.Abs(z);
 
     public int x;
     public int y;

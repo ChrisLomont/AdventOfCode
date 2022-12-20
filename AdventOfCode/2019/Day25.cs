@@ -435,9 +435,9 @@ namespace Lomont.AdventOfCode._2019
 
         Queue<long> inputQueue = new();
 
-        int GetInput()
+        long GetInput()
         {
-            return (int)inputQueue.Dequeue();
+            return inputQueue.Dequeue();
         }
 
         string curText = "";
