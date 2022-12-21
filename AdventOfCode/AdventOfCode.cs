@@ -358,24 +358,25 @@
         /// <summary>
         /// Dump enumerable
         /// </summary>
-        public static void Dump<T>(IEnumerable<T> items, bool singleLine = false)
+        public static void Dump<T>(IEnumerable<T> items, bool singleLine = false, TextWriter? output = null)
         {
+            output ??= Console.Out;
             foreach (var i in items)
             {
                 if (singleLine)
                 {
-                    Console.Write(i+", ");
+                    output.Write(i+", ");
                 }
                 else
-                    Console.WriteLine(i);
+                    output.WriteLine(i);
             }
-            if (singleLine) Console.WriteLine();
+            if (singleLine) output.WriteLine();
         }
 
         /// <summary>
         /// Dump 2d grid
         /// </summary>
-        protected void Dump<T>(T[,] grid, bool noComma = false)
+        protected static void Dump<T>(T[,] grid, bool noComma = false)
         {
             var m = grid.GetLength(0);
             Apply(grid, (i, j,v) =>

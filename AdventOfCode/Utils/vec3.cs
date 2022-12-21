@@ -24,6 +24,18 @@ public class vec3 : IEquatable<vec3>
         return -1 * a;
 
     }
+
+    public int this[int i]
+    {
+        get => i switch {0 => x, 1 => y, 2 => z, _ => throw new IndexOutOfRangeException()};
+        set
+        {
+            if (i == 0) x = value;
+            else if (i == 1) y = value;
+            else if (i == 2) z = value;
+            else throw new IndexOutOfRangeException();
+        }
+    }
     public static vec3 operator *(int s, vec3 a)
     {
         return new vec3(s * a.x, s * a.y, s * a.z);

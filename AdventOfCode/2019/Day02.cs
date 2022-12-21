@@ -124,7 +124,8 @@ namespace Lomont.AdventOfCode._2019
                         Write(Read(mode1) * Read(mode2), mode3);
                         break;
                     case 3: // Input - added problem #5 
-                        Write(getInput(), mode1);
+                        var inp = getInput();
+                        Write(inp, mode1);
                         break;
                     case 4: // Output - added problem #5 
                         output(Read(mode1));
