@@ -121,6 +121,36 @@ namespace Lomont.AdventOfCode._2022
 
         // for my puzzle
         static int dw = 50, dh = 50;
+        /*
+        
+        mine laid out like this. Paired edges are marked
+        pairing could be computed by walking exterior, and noting
+        things work like a zipper from corner pair to corner pair
+        so the D corner zips till the F corner in one dir, the B corner in the other....
+
+
+              +-----+-----+
+              |  A  |  G  |
+              |E    |    C|
+              |     |  D  |
+              +-----+-----+
+              |     |
+              |F   D|
+              |     |
+        +-----+-----+
+        |  F  |     |
+        |E    |    C|
+        |     |  B  |
+        +-----+-----+
+        |     |
+        |A   B|
+        |  G  |
+        +-----+
+
+
+
+         */
+
 
         // tbls:
         // each is (x,y) start of a 1 cell wide line, a dir to extend it 
