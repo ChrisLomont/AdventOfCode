@@ -194,7 +194,10 @@
             for (var i =0; i < w; ++i)
             for (var j = 0; j < h; ++j)
             {
-                g[i, j] = lines[j][i];
+                if (i < lines[j].Length)
+                    g[i, j] = lines[j][i];
+                else
+                    g[i, j] = filler;
             }
 
             return (w, h, g);
