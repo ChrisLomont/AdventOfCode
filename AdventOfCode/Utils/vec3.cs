@@ -90,8 +90,13 @@ public class vec3 : IEquatable<vec3>
         x = this.x;
         y = this.y;
         z = this.z;
-
     }
+    public void Deconstruct(out int x, out int y)
+    {
+        x = this.x;
+        y = this.y;
+    }
+
     public static vec3 operator -(vec3 lhs, vec3 rhs)
     {
         return new vec3(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);

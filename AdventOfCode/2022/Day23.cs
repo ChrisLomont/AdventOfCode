@@ -1,6 +1,5 @@
-﻿
-using System.ComponentModel.Design;
-using System.Text;
+﻿using System.Collections;
+using System.Security.AccessControl;
 
 namespace Lomont.AdventOfCode._2022
 {
@@ -14,110 +13,78 @@ namespace Lomont.AdventOfCode._2022
     // 22   00:45:06     952      0   01:53:04     505      0
 
     //2022 Day 23 part 1: 4091 in 1429674.3 us
-    //2022 Day 23 part 2: 1036 in 146039594.5 us
+    //2022 Day 23 part 2: 1036 in 146 039 594.5 us = 146 secs :(
 
     internal class Day23 : AdventOfCode
     {
-        static vec3 NW = new vec3(-1, -1);
-        static vec3 N = new vec3(0, -1);
-        static vec3 NE = new vec3(1, -1);
+        static vec3 NW = new (-1, -1);
+        static vec3 N  = new (0, -1);
+        static vec3 NE = new (1, -1);
+        static vec3 E  = new (1, 0);
+        static vec3 SE = new (1, 1);
+        static vec3 S  = new (0, 1);
+        static vec3 SW = new (-1, 1);
+        static vec3 W  = new (-1, 0);
 
-        static vec3 E = new vec3(1, 0);
-
-        static vec3 SE = new vec3(1, 1);
-        static vec3 S = new vec3(0, 1);
-        static vec3 SW = new vec3(-1, 1);
-
-        static vec3 W = new vec3(-1, 0);
-
-        static Func<vec3, Dictionary<vec3, vec3>, HashSet<vec3>, bool>[] funcs = new Func<vec3, Dictionary<vec3, vec3>, HashSet<vec3>, bool>[]
+        static List<List<vec3>> CheckTable = new()
         {
-            (elf,moves, elves ) => Fun(N, NE, NW, elf, N, moves, elves),
-            (elf,moves, elves ) => Fun(S, SE, SW, elf, S, moves, elves),
-            (elf,moves, elves ) => Fun(W, NW, SW, elf, W, moves, elves),
-            (elf,moves, elves) => Fun(E, NE, SE, elf, E, moves, elves),
+            new(){N,NE,NW},
+            new(){S,SE,SW},
+            new(){W,NW,SW},
+            new(){E,NE,SE},
         };
-
-        static bool Fun(
-            vec3 d1, vec3 d2, vec3 d3, vec3 elf, vec3 res,
-            Dictionary<vec3, vec3> moves, HashSet<vec3> elves)
-        {
-            if (
-                !elves.Contains(elf + d1) &&
-                !elves.Contains(elf + d2) &&
-                !elves.Contains(elf + d3)
-            )
-            {
-                moves[elf] = elf + res;
-                return true;
-            }
-
-            return false;
-        }
 
 
         public override object Run(bool part2)
         {
-            if (part2) return -1; 
-            var (w,h,g) = CharGrid();
-
             var elves = new HashSet<vec3>();
-            Apply(g, (i, j, v) =>
+            var lines = ReadLines();
+            for (var i = 0; i < lines[0].Length; ++i)
+            for (var j = 0; j < lines.Count; ++j)
             {
-                if (v == '#')
-                elves.Add(new vec3(i, j));
-                return v;
-            });
+                if (lines[j][i] == '#')
+                    elves.Add(new vec3(i, j));
 
-            Dictionary<vec3, vec3> moves = new();
-            //Draw();
-
-            static void DoOne(vec3 elf, Dictionary<vec3, vec3> moves, HashSet<vec3> elves, int round)
-            {
-                for (var c = 0; c < 4; ++c)
-                {
-                    if (funcs[(c + round) % 4](elf,moves,elves)) break;
                 }
 
-            }
+            // track requested moves
+            Dictionary<vec3, vec3> moves = new();
 
+            var nbrs = new List<vec3>();
+            for (var j = -1; j <= 1; ++j)
+            for (var i = -1; i <= 1; ++i)
+                if (i != 0 || j != 0) nbrs.Add(new(i, j)); ;
 
-
-            int max = part2 ? int.MaxValue-10 : 10;
-            for (var round = 0; round < max; ++round)
+            var round = 0;
+            while (true)
             {
                 if ((round % 25) == 0)
                 {
-                    var (aminX, amaxX, aminY, amaxY) = Box(elves);
-                    var aarea = (amaxX - aminX + 1) * (amaxY - aminY + 1);
-                    Console.WriteLine($"Round {round + 1}, area {aarea}");
+                    //Console.WriteLine($"Round {round + 1}, area {Area(elves)}");
                 }
 
-                // part 1 - think of moves
+                // part 1 of round - choose moves
                 moves.Clear();
                 foreach (var elf in elves)
                 {
-                    var cnt = 0;
-                    for (var j = -1; j <= 1; ++j)
-                    for (var i = -1; i <= 1; ++i)
-                    {
-                        if (i == 0 && j == 0) continue;
-                        if (elves.Contains(elf+new vec3(i, j)))
-                            cnt++;
+                    // default no move
+                    moves.Add(elf, elf); 
+
+                    if (nbrs.Any(d => elves.Contains(elf + d)))
+                    { // check moves
+                        for (var c = 0; c < 4; ++c)
+                        {
+                            var chk = CheckTable[(c + round) % 4];
+                            if (!chk.Any(d => elves.Contains(elf + d)))
+                            {
+                                moves[elf] = elf + chk[0];
+                                break;
+                            }
+                        }
                     }
-
-                    moves.Add(elf, elf); // default stay still
-
-                    if (cnt == 0) 
-                        continue;
-
-                    DoOne(elf, moves, elves, round);
-
-
                 }
 
-
-                // part2 = make moves
+                // part 2 of round : do moves
                 var elves2 = new HashSet<vec3>();
                 foreach (var elf in elves)
                 {
@@ -129,56 +96,25 @@ namespace Lomont.AdventOfCode._2022
                 }
 
                 // see if any moved
-                var moved = false;
-                foreach (var elf in elves)
-                    if (!elves2.Contains(elf))
-                    {
-                        moved = true;
-                        break;
-                    }
+                if (part2 && elves.SetEquals(elves2))
+                    return round + 1;
+                // check area for part 1
+                if (!part2 && round == 9)
+                    return Area(elves2) - elves2.Count;
 
-                if (!moved)
-                    return round+1;
-
+                // use update elves for next round
                 elves = elves2;
-                //Console.WriteLine("Round "+(round+1));
-                //Draw();
-                //Console.WriteLine();
-
+                ++round;
             }
 
-            void Draw()
+            static int Area(HashSet<vec3> h)
             {
-                var (minX, maxX, minY, maxY) = Box(elves);
-                for (var j = minY; j <= maxY; ++j)
-                {
-                    for (var i = minX; i <= maxX; ++i)
-                    {
-                        Console.Write(elves.Contains(new vec3(i,j))?"#":".");
-
-                    }
-
-                    Console.WriteLine();
-                }
-
-                Console.WriteLine();
-
+                var min = h.Aggregate(vec3.MaxValue, vec3.Min);
+                var max = h.Aggregate(vec3.MinValue, vec3.Max);
+                var (dx, dy) = max - min + vec3.One;
+                return dx*dy;
             }
 
-            static (int minX, int maxX, int minY, int maxY) Box(HashSet<vec3> h)
-            {
-                var minX = h.Min(v => v.x);
-                var maxX = h.Max(v => v.x);
-                var minY = h.Min(v => v.y);
-                var maxY = h.Max(v => v.y);
-                return (minX, maxX, minY, maxY);
-            }
-
-            var (minX, maxX, minY, maxY) = Box(elves);
-            var area = (maxX - minX + 1) * (maxY - minY + 1);
-
-
-            return area -elves.Count;
         }
     }
 }
