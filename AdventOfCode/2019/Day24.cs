@@ -1,7 +1,8 @@
-using System.Runtime.InteropServices.JavaScript;
-
 namespace Lomont.AdventOfCode._2019
 {
+    //2019 Day 24 part 1: 18370591 in 8481.7 us
+    //2019 Day 24 part 2: 2040 in 152110.5 us
+
     internal class Day24 : AdventOfCode
     {
         object Run2()
@@ -72,7 +73,7 @@ namespace Lomont.AdventOfCode._2019
                 new(){19,0, 13,1, 17,1, 23,0},
             };
 
-            Dump(g, true);
+         //  Dump(g, true);
 
             HashSet<(int pos,int lvl)> hasBug = new();
             Apply(g, (i, j, v) =>
@@ -156,7 +157,7 @@ namespace Lomont.AdventOfCode._2019
                 -vec3.YAxis,
             };
 
-            Dump(g1, true);
+          //  Dump(g1, true);
             var seen = new HashSet<ulong>();
             while (true)
             {
