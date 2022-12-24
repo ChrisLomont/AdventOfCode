@@ -43,7 +43,7 @@ public class vec3 : IEquatable<vec3>
 
     public static vec3 operator *(vec3 a, int s) => s * a;
 
-    public int ManhattanLength => Math.Abs(x) + Math.Abs(y) + Math.Abs(z);
+    public int ManhattanDistance => Math.Abs(x) + Math.Abs(y) + Math.Abs(z);
 
     public int x;
     public int y;

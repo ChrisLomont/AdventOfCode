@@ -92,8 +92,8 @@ namespace Lomont.AdventOfCode._2019
             var energy = 0L;
             for (var i = 0; i < moons.Count; i++)
             {
-                var pot = moons[i].ManhattanLength;
-                var kin = vel[i].ManhattanLength;
+                var pot = moons[i].ManhattanDistance;
+                var kin = vel[i].ManhattanDistance;
                 energy += (long)pot * kin;
             }
 

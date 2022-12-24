@@ -25,7 +25,7 @@ namespace Lomont.AdventOfCode._2019
 
             if (!part2)
             {
-                return c.Min(c => c.ManhattanLength);
+                return c.Min(c => c.ManhattanDistance);
             }
 
             var min = int.MaxValue;
