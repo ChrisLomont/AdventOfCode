@@ -3,6 +3,9 @@ namespace Lomont.AdventOfCode._2019
     internal class Day18 : AdventOfCode
     {
 
+        //2019 Day 18 part 1: (3546, fwqrcaovjmgltkzubhsipyndxe) in 1012414.9 us
+        //2019 Day 18 part 2: (1988, qrwhcfagoltvjkubzsipymndxe) in 3504742.4 us
+
         // https://github.com/joelgrus/advent2019/blob/master/day18/day18.py
 
         static vec3[] dirs = new[]
@@ -14,7 +17,7 @@ namespace Lomont.AdventOfCode._2019
         };
 
 
-     
+
         string[] puzz1 =
         {
             "#########",
@@ -23,39 +26,45 @@ namespace Lomont.AdventOfCode._2019
         };
 
         // a, then b, then c. Choice between d & e - e closer, d better long run, then e
-        string[] puzz2= {
+        string[] puzz2 =
+        {
             "########################",
             "#f.D.E.e.C.b.A.@.a.B.c.#",
             "######################.#",
             "#d.....................#",
             "########################"
         };
-        
-        string[] puzz3 = {
-"########################",
-"#...............b.C.D.f#",
-"#.######################",
-"#.....@.a.B.c.d.A.e.F.g#",
-"########################"
+
+        string[] puzz3 =
+        {
+            "########################",
+            "#...............b.C.D.f#",
+            "#.######################",
+            "#.....@.a.B.c.d.A.e.F.g#",
+            "########################"
         };
-        string[] puzz4 = {
-"#################",
-"#i.G..c...e..H.p#",
-"########.########",
-"#j.A..b...f..D.o#",
-"########@########",
-"#k.E..a...g..B.n#",
-"########.########",
-"#l.F..d...h..C.m#",
-"#################"
+
+        string[] puzz4 =
+        {
+            "#################",
+            "#i.G..c...e..H.p#",
+            "########.########",
+            "#j.A..b...f..D.o#",
+            "########@########",
+            "#k.E..a...g..B.n#",
+            "########.########",
+            "#l.F..d...h..C.m#",
+            "#################"
         };
-        string[] puzz5 = {
-"########################",
-"#@..............ac.GI.b#",
-"###d#e#f################",
-"###A#B#C################",
-"###g#h#i################",
-"########################"
+
+        string[] puzz5 =
+        {
+            "########################",
+            "#@..............ac.GI.b#",
+            "###d#e#f################",
+            "###A#B#C################",
+            "###g#h#i################",
+            "########################"
         };
 
         public override object Run(bool part2)
@@ -84,7 +93,7 @@ namespace Lomont.AdventOfCode._2019
 
             var lines = ReadLines();
             if (part2)
-            {
+            { // replace center block
                 var w = lines[0].Length;
                 var h = lines.Count;
                 var (cx, cy) = (w / 2, h / 2);
@@ -93,6 +102,7 @@ namespace Lomont.AdventOfCode._2019
                 //Console.WriteLine(lines[cy-1]);
                 //Console.WriteLine(lines[cy ]);
                 //Console.WriteLine(lines[cy + 1]);
+
 
                 lines[cy - 1] = lines[cy - 1][0..(cx-1)] + "@#@" + lines[cy - 1][(cx + 2)..];
                 lines[cy + 0] = lines[cy + 0][0..(cx-1)] + "###" + lines[cy + 0][(cx + 2)..];
@@ -191,8 +201,11 @@ namespace Lomont.AdventOfCode._2019
                 AllShortestPaths()
             {
                 var results = new Dictionary<char, Dictionary<char, (int steps, string doors)>>();
-                foreach (var start in starts)
-                    results.Add('@',ShortestPathsFromSource(start,walls,keys,doors));
+                for (var i =0; i < starts.Count; ++i)
+                {
+                    // here we replace @ with 0,1,2,3
+                    results.Add((char)(i+'0'), ShortestPathsFromSource(starts[i], walls, keys, doors));
+                }
 
                 foreach (var (keyLoc, key) in keys)
                     results.Add(key, ShortestPathsFromSource(keyLoc, walls, keys, doors));
@@ -201,8 +214,69 @@ namespace Lomont.AdventOfCode._2019
 
             (int pathLength, string keyOrder) ShortestPath2()
             {
+                var allPaths = AllShortestPaths();
+                var seenSignatures = new HashSet<string>();
+
+                var numKeys = keys.Count;
+
+                int best = int.MaxValue;
+
+                // # maintain priority queue of num_steps, key at, keys had
+                // prioritize on shortest path (the priority queue key, 2nd parameter )
+                var pq = new PriorityQueue<(int numSteps, string keyAt, string keysHad), int>();
+                pq.Enqueue((0, "0123", ""), 0); // want others more and more negative key
+
+                while (pq.Count > 0)
+                {
+                    var (numSteps, sourceKeys, keysHad) = pq.Dequeue(); // lowest priority
+
+                    var sig = Signature2(keysHad, sourceKeys);
+                    if (seenSignatures.Contains(sig))
+                        continue;
+                    seenSignatures.Add(sig);
+
+                    if (keysHad.Length == numKeys)
+                    {
+                        //Console.WriteLine($"Key order {keysHad}");
+                        return (numSteps, keysHad); // cannot be any shorter path due to priority queue
+                    }
+
+                    for (var srcKeyIndex = 0; srcKeyIndex < 4; ++srcKeyIndex)
+                    {
+                        var sourceKey = sourceKeys[srcKeyIndex];
+                        foreach (var (destKey, (stepsToKey, doors1)) in allPaths[sourceKey])
+                        {
+                            if (keysHad.Contains(destKey))
+                                continue;
+                            // skip path to any door for which we don't have the key 
+                            var dh = new HashSet<char>();
+                            var dk = doors1.ToLower().ToCharArray().ToList();
+                            dh.UnionWith(dk);
+                            dh.ExceptWith(keysHad.ToCharArray());
+                            if (dh.Any())
+                                continue;
+
+                            Trace.Assert(!keysHad.Contains(destKey));
+                            var newKeys = keysHad + destKey;
+
+                            var destKeys = sourceKeys.Replace(sourceKey,destKey);
+                            pq.Enqueue((numSteps + stepsToKey, destKeys, newKeys), (numSteps + stepsToKey));
+                        }
+                    }
+                }
+
                 throw new Exception();
+                static string Signature2(string keysHad, string keys)
+                {
+                    var sortedDistinct = keysHad.ToCharArray().Distinct().Order().Aggregate("", (a, b) => a + b);
+
+                    var sortedKeys= keys.ToCharArray().Distinct().Order().Aggregate("", (a, b) => a + b);
+
+                    return $"{sortedKeys}-{sortedDistinct}";
+                }
+
             }
+
 
             (int pathLength, string keyOrder) ShortestPath()
             {
@@ -216,7 +290,8 @@ namespace Lomont.AdventOfCode._2019
                 // # maintain priority queue of num_steps, key at, keys had
                 // prioritize on shortest path (the priority queue key, 2nd parameter )
                 var pq = new PriorityQueue<(int numSteps, char keyAt, string keysHad), int>();
-                pq.Enqueue((0, '@', ""), 0); // want others more and more negative key
+                // note we replaced '@'  with '0' in maps
+                pq.Enqueue((0, '0', ""), 0); // want others more and more negative key
 
                 while (pq.Count > 0)
                 {
@@ -253,11 +328,11 @@ namespace Lomont.AdventOfCode._2019
                 }
 
                 throw new Exception();
-            }
-            static string Signature(string keysHad, char key)
-            {
-                var sortedDistinct = keysHad.ToCharArray().Distinct().Order().Aggregate("", (a, b) => a + b);
-                return $"{key}-{sortedDistinct}";
+                static string Signature(string keysHad, char key)
+                {
+                    var sortedDistinct = keysHad.ToCharArray().Distinct().Order().Aggregate("", (a, b) => a + b);
+                    return $"{key}-{sortedDistinct}";
+                }
             }
 
 #if false
