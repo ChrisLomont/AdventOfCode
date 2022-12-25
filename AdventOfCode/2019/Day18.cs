@@ -122,8 +122,8 @@ namespace Lomont.AdventOfCode._2019
             Load(lines);
 
             if (!part2)
-                return ShortestPath();
-            return ShortestPath2();
+                return ShortestPath().pathLength;
+            return ShortestPath2().pathLength;
 
 
             void Load(IEnumerable<string> lines)
@@ -335,13 +335,6 @@ namespace Lomont.AdventOfCode._2019
                 }
             }
 
-#if false
-
-def signature(prev_keys: Set[str], loc: str) -> str:
-    return f"{loc}:{''.join(sorted(prev_keys))}"
-
-
-#endif
         }
 
 #if false

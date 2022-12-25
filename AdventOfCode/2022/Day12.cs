@@ -145,7 +145,7 @@ namespace Lomont.AdventOfCode._2022
                     bestStart = new vec3(i, j);
             }
 
-            Console.WriteLine($"Total visits {totalVisits}, {(double) totalVisits / (w * h):F1}x increase");
+            //Console.WriteLine($"Total visits {totalVisits}, {(double) totalVisits / (w * h):F1}x increase");
 
             // save history:
             using (var f = File.CreateText("Prob11_History.txt"))
@@ -235,15 +235,15 @@ namespace Lomont.AdventOfCode._2022
 
             void Testing(int visits)
             {
-                Console.WriteLine("Visited " + visits); // got 3152, much overkill
+                //Console.WriteLine("Visited " + visits); // got 3152, much overkill
 
                 var solution1 = Solution(start);
                 var solution2 = Solution(bestStart);
-                Console.WriteLine("Shortest path and best start path");
-                Draw(g, start, end, solution1, solution2);
+                //Console.WriteLine("Shortest path and best start path");
+                //Draw(g, start, end, solution1, solution2);
                 var solution3 = AStarPath();
-                Console.WriteLine($"Shortest floodfill path {solution1.Count} and shortest A* path {solution3.Count}");
-                Draw(g, start, end, solution1, solution3);
+                //Console.WriteLine($"Shortest floodfill path {solution1.Count} and shortest A* path {solution3.Count}");
+                //Draw(g, start, end, solution1, solution3);
 
                 DetectError(solution1, solution3);
 
@@ -323,10 +323,10 @@ namespace Lomont.AdventOfCode._2022
                 Neighbors // how to get neighbors
             );
 
-            foreach (var p in path)
-                Console.Write(g[p.x, p.y]);
-            Console.WriteLine();
-            Console.WriteLine($"{start} {path[0]} {end} {path.Last()}");
+            //foreach (var p in path)
+            //    Console.Write(g[p.x, p.y]);
+            //Console.WriteLine();
+            //Console.WriteLine($"{start} {path[0]} {end} {path.Last()}");
 
             for (var i = 0; i < path.Count - 1; ++i)
             {
@@ -393,7 +393,7 @@ namespace Lomont.AdventOfCode._2022
                         var ans = new List<T>();
                         ans.AddRange(path);
                         ans.Reverse();
-                        Console.WriteLine($"Solution length {ans.Count - 1}");
+                        //Console.WriteLine($"Solution length {ans.Count - 1}");
                         return ans;
                     }
 

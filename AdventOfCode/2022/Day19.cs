@@ -115,7 +115,7 @@ namespace Lomont.AdventOfCode._2022
                         open.Enqueue((resources + bots - costs[k], bots + extra[k], t - 1));
             }
 
-            Console.WriteLine($"States {closed.Count}");
+          //  Console.WriteLine($"States {closed.Count}");
             return mostGeodes;
         }
 

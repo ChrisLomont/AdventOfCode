@@ -47,7 +47,7 @@ namespace Lomont.AdventOfCode._2019
                 return Run2(nums,startIndex);
             }
 
-            Console.WriteLine($"Num len {nums.Count}, start Index {startIndex}");
+           // Console.WriteLine($"Num len {nums.Count}, start Index {startIndex}");
 
 
             var pp = new int[] {1,0,-1,0 };

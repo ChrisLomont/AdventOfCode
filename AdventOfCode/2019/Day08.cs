@@ -58,7 +58,7 @@ namespace Lomont.AdventOfCode._2019
 
             });
             Dump(final,true);
-            return -1;
+            return "HFYAK"; // read from Console
 
 
 

@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Security.AccessControl;
-
-namespace Lomont.AdventOfCode._2022
+﻿namespace Lomont.AdventOfCode._2022
 {
 
     // top 100,both 10:03 - 24:43

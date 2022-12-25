@@ -399,7 +399,7 @@
         static Regex signedNumberRegex = new Regex(@"(\+|-)?\d+");
 
         // read all numbers out of string, ignore other stuff
-        protected List<long> Numbers64(string line, bool allowSigned = true)
+        protected static List<long> Numbers64(string line, bool allowSigned = true)
 
         {
             if (allowSigned)

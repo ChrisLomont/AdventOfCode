@@ -9,7 +9,7 @@ namespace Lomont.AdventOfCode._2019
         // bot to play game
         class Bot
         {
-            Random rand = new Random(1234); // same game
+            Random rand = new Random(1434); // same game
 
             Room? lastRoom = null;
             Room? curRoom = null;
@@ -362,7 +362,7 @@ namespace Lomont.AdventOfCode._2019
 
 
             // update, return move
-            public string Update(List<string> lines)
+            public string Update(List<string> lines, bool show)
             {
                 ++turn;
 
@@ -380,7 +380,6 @@ namespace Lomont.AdventOfCode._2019
                     Search();
 
                 // show some things
-                var show = true;
                 if (show)
                 {
                     Console.WriteLine($"TURN {turn}");
@@ -442,6 +441,9 @@ namespace Lomont.AdventOfCode._2019
 
         string curText = "";
 
+        bool automated = true; // false for interactive
+        bool show = false; // show outputs and inputs
+
         void WriteOutput(long ch)
         {
             curText += (char)ch;
@@ -467,7 +469,8 @@ namespace Lomont.AdventOfCode._2019
             //Console.WriteLine("Input:");
             //return Console.ReadLine();
 
-            Console.WriteLine(curText); // - todo - make pretty
+            if (show)
+                Console.WriteLine(curText); // - todo - make pretty
 
             var fg = Console.ForegroundColor;
             var rep = new[]
@@ -481,16 +484,18 @@ namespace Lomont.AdventOfCode._2019
             // let bot process
             var lines = curText.Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList();
 
-            var winner = lines.FirstOrDefault(c => c.StartsWith("Oh, hello! You should be able to get in by typing"));
+            var winner = lines.FirstOrDefault(c => c.Contains("typing"));//"Oh, hello! You should be able to get in by typing"));
             if (!string.IsNullOrEmpty(winner))
             {
                 answer = Numbers(winner)[0];
-                throw new Exception($"Win {answer}");
+                //throw new Exception($"Win {answer}");
             }
 
-            var inpBot = bot.Update(lines);
+            var inpBot = bot.Update(lines, show);
 
-            var inp = Console.ReadLine().Trim();
+            string inp = "";
+            if (!automated)
+                inp = Console.ReadLine().Trim();
             // command replacements
             for (var i = 0; i < rep.Length; i += 2)
                 inp = inp == rep[i] ? rep[i + 1] : inp;
@@ -505,7 +510,8 @@ namespace Lomont.AdventOfCode._2019
                 inp = inpBot;
             
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write(inp);
+            if (show)
+                Console.Write(inp);
             Console.ForegroundColor = fg;
 
             return inp;
@@ -524,6 +530,8 @@ namespace Lomont.AdventOfCode._2019
             {
                 while (!comp1.Step())
                 {
+                    if (answer != -1)
+                        break;
                 }
             }
             catch { }

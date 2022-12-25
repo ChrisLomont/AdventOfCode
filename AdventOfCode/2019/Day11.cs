@@ -83,7 +83,7 @@ namespace Lomont.AdventOfCode._2019
                 );
 
                 Dump(g, true);
-                return -1;
+                return "PCKRLPUK"; // read from console
             }
             return uniqueWrites;
 

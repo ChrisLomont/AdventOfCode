@@ -131,7 +131,7 @@ namespace Lomont.AdventOfCode._2022
                // Dump(c, noComma: true);
             }
 
-            Console.WriteLine(count);
+            //Console.WriteLine(count);
 
             if (part2) return count;//19179 not it
             return count;
@@ -151,15 +151,15 @@ namespace Lomont.AdventOfCode._2022
 
                     return v;
                 });
-                Console.WriteLine($"min max {minX} {maxX}");
+               // Console.WriteLine($"min max {minX} {maxX}");
                 for (var j = 0; j < h; ++j)
                 {
                     for (var i = minX - 5; i <= maxX + 5; ++i)
                     {
-                        Console.Write(g[i,j]);
+                       // Console.Write(g[i,j]);
                     }
 
-                    Console.WriteLine();
+                   // Console.WriteLine();
                 }
             }
 
