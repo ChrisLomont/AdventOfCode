@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System;
+using System.ComponentModel.Design;
+using System.Net;
 using System.Xml;
 
 namespace Lomont.AdventOfCode
@@ -24,6 +26,25 @@ namespace Lomont.AdventOfCode
 
     // todo - nice to have n-tree builder from text cleanly
     // example probs 2022: 13, 2021 18, 10, 
+
+
+    
+        // would be nice to have a BNF parser with regex stuff
+        // for example, lines in this item 
+        // Game 19: 2 blue; 1 blue, 4 green, 6 red; 7 green, 6 red, 2 blue; 2 blue, 5 red, 4 green; 1 green, 10 red
+        // can be described as
+        // "Game (#:game): (((#:red red|#:green green|#:blue blue)?,)+;)+
+        // want parsed into struct that is
+        // struct {
+        //    int game;
+        //    List<vec3> items;  // or maybe List<(int red,int green,int blue)>....
+        // };
+        // and this parsed into some nice structure to walk
+        //
+        // or even a regex tokenizer: give string, list of patterns and maybe discards, and it splits into tokens
+        // see prob 2023 #2
+
+
 
     */
     internal abstract class AdventOfCode
@@ -354,6 +375,46 @@ namespace Lomont.AdventOfCode
                 grid[i, j] = func(i, j, grid[i, j]);
         }
 
+        /// <summary>
+        /// 27 3d neighbors
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="gg"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        /// <param name="def"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Nbrs3<T>(T[,,] gg, int i, int j, int k, T def)
+        {
+            for (var di = -1; di <= 1; ++di)
+            for (var dj = -1; dj <= 1; ++dj)
+            for (var dk = -1; dk <= 1; ++dk)
+            {
+                if (di == 0 && dj == 0 && dk == 0) continue;
+                yield return Get(gg, i + di, j + dj, k + dk, def);
+            }
+        }
+
+        /// <summary>
+        /// 8 2d neighbors
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="gg"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="def"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Nbrs2<T>(T[,] gg, int i, int j, T def)
+        {
+            for (var di = -1; di <= 1; ++di)
+            for (var dj = -1; dj <= 1; ++dj)
+            {
+                if (di == 0 && dj == 0) continue;
+                yield return Get(gg, i + di, j + dj, def);
+            }
+        }
+
         #endregion
 
         #region parsers
@@ -375,8 +436,8 @@ namespace Lomont.AdventOfCode
         /// </summary>
         protected long Num(string n) => long.Parse(n);
 
-        static Regex numberRegex = new Regex(@"\d+");
-        static Regex signedNumberRegex = new Regex(@"(\+|-)?\d+");
+        static Regex numberRegex = new(@"\d+");
+        static Regex signedNumberRegex = new(@"(\+|-)?\d+");
 
 
 
@@ -395,6 +456,114 @@ namespace Lomont.AdventOfCode
                 return signedNumberRegex.Matches(line).Select(m => int.Parse(m.Value)).ToList();
             return numberRegex.Matches(line).Select(m => int.Parse(m.Value)).ToList();
         }
+
+
+        protected class ActionList : List<(Regex regex, string type, int index)>
+        {
+            Action<string> endAction = s => { };
+
+            List<Action<string>> strActions = new();
+            List<Action<string,int>> strIntActions = new();
+
+            public void EndAction()
+            {
+                if (endIndex != -1)
+                    DoOne(endType, endIndex, "");
+            }
+
+            int endIndex = -1;
+            string endType = "";
+
+            void AddOne(string type, string pattern, int index)
+            {
+                if (String.IsNullOrEmpty(pattern))
+                {
+                    endIndex = index;
+                    endType = type;
+                }
+                else
+                {
+                    var reg = new Regex("^" + pattern);
+                    Add(new(reg, type, index));
+                }
+            }
+
+            public void DoOne(string type, int index, string match)
+            {
+                switch (type)
+                {
+                    case "str+int":
+                        int n = Numbers(match)[0];
+                        strIntActions[index](match, n);
+                        break;
+                    case "str":
+                        strActions[index](match);
+                        break;
+                    default:
+                        Console.WriteLine($"ERROR: unknown parse stype {type}");
+                        break;
+                }
+            }
+
+            public void Add(string pattern, Action<string,int> action)
+            {
+                strIntActions.Add(action);
+                AddOne("str+int",pattern,strIntActions.Count-1);
+            }
+
+            public void Add(string pattern, Action<string> action)
+            {
+                strActions.Add(action);
+                AddOne("str", pattern, strActions.Count - 1);
+            }
+        }
+
+        /// <summary>
+        /// Given line, and patterns to walk it, and actions, do it
+        /// See 2023, Day2, for example
+        /// 
+        /// </summary>
+        protected static void PatternActions(string line, ActionList patterns)
+        {
+            var n = patterns.Count;
+            while (line.Length > 0)
+            {
+                int i = 0;
+                while (i < n)
+                {
+                    var (reg, type,actIndex) = patterns[i];
+                
+                    var m = reg.Match(line);
+                    if (m.Success)
+                    {
+                        var matchText = m.Groups[0].Value;
+                        patterns.DoOne(type,actIndex,matchText);
+                        line = line.Substring(matchText.Length);
+                        break;
+                    }
+                    ++i;
+                }
+                if (i >= n)
+                {
+                    Console.WriteLine($"Error: parser match ended at {line}");
+                    return;
+                }
+            }
+
+            if (line.Length == 0)
+                patterns.EndAction();
+
+        }
+
+        protected void ProcessAllLines(ActionList patterns)
+        {
+            foreach (var line in ReadLines())
+                PatternActions(line,patterns);
+        }
+
+
+
+
 
         #endregion
 
@@ -611,45 +780,7 @@ namespace Lomont.AdventOfCode
                 items[i] = func(i);
         }
 
-        /// <summary>
-        /// 27 3d neighbors
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="gg"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        /// <param name="def"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> Nbrs3<T>(T[,,] gg, int i, int j, int k, T def)
-        {
-            for (var di = -1; di <= 1; ++di)
-                for (var dj = -1; dj <= 1; ++dj)
-                    for (var dk = -1; dk <= 1; ++dk)
-                    {
-                        if (di == 0 && dj == 0 && dk == 0) continue;
-                        yield return Get(gg, i + di, j + dj, k + dk, def);
-                    }
-        }
-
-        /// <summary>
-        /// 8 2d neighbors
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="gg"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="def"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> Nbrs2<T>(T[,] gg, int i, int j, T def)
-        {
-            for (var di = -1; di <= 1; ++di)
-                for (var dj = -1; dj <= 1; ++dj)
-                {
-                    if (di == 0 && dj == 0) continue;
-                    yield return Get(gg, i + di, j + dj, def);
-                }
-        }
+    
 
     }
 }
