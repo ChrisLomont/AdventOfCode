@@ -1,4 +1,7 @@
-﻿namespace Lomont.AdventOfCode
+﻿using System.Net;
+using System.Xml;
+
+namespace Lomont.AdventOfCode
 {
     // baseAOC tools
     /* TODO
@@ -19,9 +22,8 @@
     - abstract patterns: see 2020 day 4
     - add manhattan distances, hamming distances
 
-        // todo - nice to have n-tree builder from text cleanly
+    // todo - nice to have n-tree builder from text cleanly
     // example probs 2022: 13, 2021 18, 10, 
-
 
     */
     internal abstract class AdventOfCode
@@ -29,8 +31,79 @@
         // path from where exe runs to data file, when run in Visual Studio 2022
         public static string DataPath = "../../../";
 
-        public string GetFile(int day)
+        public AdventOfCode()
         {
+            try
+            {
+                var filename = GetFileName();
+                if (!File.Exists(filename) || (new FileInfo(filename)).Length == 0)
+                {
+                    var webContent = GetWebfile();
+                    File.WriteAllText(filename, webContent);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: trying to read web file {ex}");
+
+            }
+        }
+
+        /// <summary>
+        /// Run a problem, part 2 if part2==true
+        /// </summary>
+        /// <param name="part2"></param>
+        /// <returns></returns>
+        public abstract object Run(bool part2);
+
+
+        #region files
+        /// <summary>
+        /// Get input file from web
+        /// </summary>
+        /// <returns></returns>
+        public string GetWebfile()
+        {
+            var day = Int32.Parse(this.GetType().Name.Substring(3));
+
+            var t = this.GetType().FullName;
+            Trace.Assert(t != null);
+            var year = new Regex(@"\d{4}").Match(t!).Value;
+            // https://adventofcode.com/2023/day/1/input
+            var url = $"https://adventofcode.com/{year}/day/{day}/input";
+
+            var webRequest = WebRequest.Create(url);
+
+            void Add(WebRequest wr)
+            {
+                var ht = wr as HttpWebRequest;
+                if (ht == null) 
+                    return;
+                if (ht.CookieContainer == null)
+                    ht.CookieContainer = new CookieContainer();
+                ht.CookieContainer.Add(
+                    new Cookie(
+                        "session",
+                        "53616c7465645f5fdb8fc887bd8c3f4abbe64e0c211cf95708e73419c716dec244e72edc25173344c4bdb53e65e88dbf885bf6238ce63085d20ba7845ef762a0",
+                        "",
+                        "adventofcode.com"
+                    ));
+            }
+
+            Add(webRequest);
+
+            using (var response = webRequest.GetResponse())
+            using (var content = response.GetResponseStream())
+            using (var reader = new StreamReader(content))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
+        public string GetFileName()
+        {
+            var day = Int32.Parse(this.GetType().Name.Substring(3));
+
             var t = this.GetType().FullName;
             Trace.Assert(t != null);
             var year = new Regex(@"\d{4}").Match(t!).Value;
@@ -38,53 +111,17 @@
         }
 
         /// <summary>
-        /// Size of a grid
+        /// Get all lines from the data file
         /// </summary>
-        public static (int w, int h) Size<T>(T[,] g)
+        /// <returns></returns>
+        protected List<string> ReadLines()
         {
-            return (g.GetLength(0), g.GetLength(1));
-        }
-        /// <summary>
-        /// Size of a grid
-        /// </summary>
-        public static (int w, int h,int d) Size<T>(T[,,] g)
-        {
-            return (g.GetLength(0), g.GetLength(1),g.GetLength(2));
+            return File.ReadAllLines(GetFileName()).ToList();
         }
 
-        // todo- make this general, use elsewhere
-        // group lines by size of group or by regex match
-        // if groupSize != -1, grouped by size
-        // else lines appended with \n, then regex splits, then \n removed from each, 
-        // default splits on \n\n (a blank line)
-        public static List<List<string>> Group(IEnumerable<string> lines, int size = -1, string matchPattern = "\n\n")
-        {
-            if (size > 0)
-                return lines.Chunk(size).Select(arr => arr.ToList()).ToList();
+        #endregion
 
-            var all = lines.Aggregate("", (a, b) => a + "\n" + b);
-            var chunks = Regex.Split(all, matchPattern);
-            //var gps = all.Split(match, StringSplitOptions.RemoveEmptyEntries);
-            return chunks
-                .Select(g => g.Split('\n', StringSplitOptions.RemoveEmptyEntries))
-                .Select(s => s.ToList()).ToList();
-        }
-
-        /// <summary>
-        /// Tally items, returning list of (count,item)
-        /// </summary>
-        public static List<(int count, T item)> Tally<T>(IEnumerable<T> items)
-        {
-            var d = new Dictionary<T, int>();
-            foreach (var item in items)
-            {
-                if (!d.ContainsKey(item))
-                    d.Add(item, 0);
-                d[item]++;
-            }
-            return d.Select(p=>(p.Value,p.Key)).ToList();
-        }
-
+        #region numbers
         /// <summary>
         /// Count bits set
         /// </summary>
@@ -101,22 +138,7 @@
             return count;
         }
 
-        /// <summary>
-        /// Run a problem, part 2 if part2==true
-        /// </summary>
-        /// <param name="part2"></param>
-        /// <returns></returns>
-        public abstract object Run(bool part2);
 
-        /// <summary>
-        /// Get all lines from the data file
-        /// </summary>
-        /// <returns></returns>
-        protected List<string> ReadLines()
-        {
-            var dayNumber = Int32.Parse(this.GetType().Name.Substring(3));
-            return File.ReadAllLines(GetFile(dayNumber)).ToList();
-        }
 
         /// <summary>
         /// Create number from base b digits
@@ -135,12 +157,12 @@
         /// <summary>
         /// Create digits base b from number
         /// </summary>
-        public static List<int> ToDigits(long v, int b=10)
+        public static List<int> ToDigits(long v, int b = 10)
         {
             var l = new List<int>();
             while (v > 0)
             {
-                l.Add((int)(v%b));
+                l.Add((int)(v % b));
                 v /= b;
             }
             l.Reverse();
@@ -161,7 +183,61 @@
             }
             return v;
         }
+        #endregion
 
+        #region grid
+        /// <summary>
+        /// Size of a grid
+        /// </summary>
+        public static (int w, int h) Size<T>(T[,] g)
+        {
+            return (g.GetLength(0), g.GetLength(1));
+        }
+        /// <summary>
+        /// Size of a grid
+        /// </summary>
+        public static (int w, int h, int d) Size<T>(T[,,] g)
+        {
+            return (g.GetLength(0), g.GetLength(1), g.GetLength(2));
+        }
+
+
+        /// <summary>
+        /// Get grid item if in bounds, else default
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="grid"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="def"></param>
+        /// <returns></returns>
+        public static T Get<T>(T[,] grid, int i, int j, T def)
+        {
+            var w = grid.GetLength(0);
+            var h = grid.GetLength(1);
+            if (i < 0 || j < 0 || w <= i || h <= j) return def;
+            return grid[i, j];
+        }
+        public static T Get<T>(T[,,] grid, int i, int j, int k, T def)
+        {
+            var w = grid.GetLength(0);
+            var h = grid.GetLength(1);
+            var d = grid.GetLength(2);
+
+            if (i < 0 || j < 0 || k < 0 || w <= i || h <= j || d <= k) return def;
+            return grid[i, j, k];
+        }
+
+        protected T Get<T>(T[,,,] grid, int i, int j, int k, int q, T def)
+        {
+            var w = grid.GetLength(0);
+            var h = grid.GetLength(1);
+            var d = grid.GetLength(2);
+            var r = grid.GetLength(3);
+
+            if (i < 0 || j < 0 || k < 0 || q < 0 || w <= i || h <= j || d <= k || r <= q) return def;
+            return grid[i, j, k, q];
+        }
         /// <summary>
         /// Get file or lines into a digit grid.
         /// </summary>
@@ -231,59 +307,98 @@
             return (w, h, g);
         }
 
-        public void Mutate<T>(IList<T> items, Func<int, T, T> func)
+
+        /// <summary>
+        /// Apply action over grid
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="grid"></param>
+        /// <param name="func"></param>
+        protected static void Apply<T>(T[,] grid, Action<T> func)
         {
-            for (var i = 0; i < items.Count; ++i)
-                items[i] = func(i, items[i]);
+            for (var i = 0; i < grid.GetLength(0); ++i)
+            for (var j = 0; j < grid.GetLength(1); ++j)
+                func(grid[i, j]);
         }
 
-        // modify item in place, over increasing i, allowing telescroping rewrites
-        public void Mutate<T>(IList<T> items, Func<int, T> func)
+        // i,j,k grid value to new grid value
+        protected void Apply<T>(T[,,] grid, Func<int, int, int, T, T> func)
         {
-            for (var i = 0; i < items.Count; ++i)
-                items[i] = func(i);
+            for (var k = 0; k < grid.GetLength(2); ++k)
+            for (var j = 0; j < grid.GetLength(1); ++j)
+            for (var i = 0; i < grid.GetLength(0); ++i)
+                grid[i, j, k] = func(i, j, k, grid[i, j, k]);
+        }
+        protected void Apply<T>(T[,,,] grid, Func<int, int, int, int, T, T> func)
+        {
+            for (var l = 0; l < grid.GetLength(3); ++l)
+            for (var k = 0; k < grid.GetLength(2); ++k)
+            for (var j = 0; j < grid.GetLength(1); ++j)
+            for (var i = 0; i < grid.GetLength(0); ++i)
+                grid[i, j, k, l] = func(i, j, k, l, grid[i, j, k, l]);
+        }
+
+        // i,j,grid value to new grid value
+        protected static int Count<T>(T[,] grid, Func<T, bool> func)
+        {
+            var count = 0;
+            Apply(grid, v => count += func(v) ? 1 : 0);
+            return count;
+        }
+
+        // i,j,grid value to new grid value
+        protected static void Apply<T>(T[,] grid, Func<int, int, T, T> func)
+        {
+            for (var j = 0; j < grid.GetLength(1); ++j)
+            for (var i = 0; i < grid.GetLength(0); ++i)
+                grid[i, j] = func(i, j, grid[i, j]);
+        }
+
+        #endregion
+
+        #region parsers
+        /// <summary>
+        /// split line into words on char, to list, remove empty
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="sp"></param>
+        /// <param name="opts"></param>
+        /// <returns></returns>
+        public static List<string> Split(string line, char sp = ' ', StringSplitOptions opts = StringSplitOptions.RemoveEmptyEntries)
+        {
+            var words = line.Split(sp, opts);
+            return words.ToList();
         }
 
         /// <summary>
-        /// 27 3d neighbors
+        /// string to number
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="gg"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="k"></param>
-        /// <param name="def"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> Nbrs3<T>(T[,,] gg, int i, int j, int k, T def)
+        protected long Num(string n) => long.Parse(n);
+
+        static Regex numberRegex = new Regex(@"\d+");
+        static Regex signedNumberRegex = new Regex(@"(\+|-)?\d+");
+
+
+
+        // read all numbers out of string, ignore other stuff
+        protected static List<long> Numbers64(string line, bool allowSigned = true)
         {
-            for (var di = -1; di <= 1; ++di)
-            for (var dj = -1; dj <= 1; ++dj)
-            for (var dk = -1; dk <= 1; ++dk)
-            {
-                if (di == 0 && dj == 0 && dk == 0) continue;
-                yield return Get(gg, i + di, j + dj, k + dk, def);
-            }
-        }
-        /// <summary>
-        /// 8 2d neighbors
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="gg"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="def"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> Nbrs2<T>(T[,] gg, int i, int j, T def)
-        {
-            for (var di = -1; di <= 1; ++di)
-            for (var dj = -1; dj <= 1; ++dj)
-            {
-                if (di == 0 && dj == 0) continue;
-                yield return Get(gg, i + di, j + dj, def);
-            }
+            if (allowSigned)
+                return signedNumberRegex.Matches(line).Select(m => long.Parse(m.Value)).ToList();
+            return numberRegex.Matches(line).Select(m => long.Parse(m.Value)).ToList();
         }
 
-        #region Utility
+        // read all numbers out of string, ignore other stuff
+        protected static List<int> Numbers(string line, bool allowSigned = true)
+        {
+            if (allowSigned)
+                return signedNumberRegex.Matches(line).Select(m => int.Parse(m.Value)).ToList();
+            return numberRegex.Matches(line).Select(m => int.Parse(m.Value)).ToList();
+        }
+
+        #endregion
+
+        #region set intersect, union, etc
 
         /// <summary>
         /// Intersect items
@@ -337,18 +452,18 @@
             return ans;
         }
 
-        /// <summary>
-        /// string to number
-        /// </summary>
-        protected long Num(string n) => long.Parse(n);
 
         protected List<T> Union<T>(IEnumerable<T> list1) =>
             Enumerable.Union(list1, list1).ToList();
+        #endregion
 
+        #region ranges
+        // from items, take range [first, first+length)
         protected List<T> RangeLen<T>(IEnumerable<T> list1, int first, int length) =>
             list1.Skip(first).Take(length).ToList();
+
         /// <summary>
-        /// 
+        /// Take rane from first to last
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list1"></param>
@@ -356,7 +471,11 @@
         /// <param name="last">Exclusive</param>
         /// <returns></returns>
         protected List<T> RangeTo<T>(IEnumerable<T> list1, int first, int last) =>
-            list1.Skip(first).Take(last-first).ToList();
+            list1.Skip(first).Take(last - first).ToList();
+
+        #endregion
+
+        #region output
 
         /// <summary>
         /// Dump enumerable
@@ -368,7 +487,7 @@
             {
                 if (singleLine)
                 {
-                    output.Write(i+", ");
+                    output.Write(i + ", ");
                 }
                 else
                     output.WriteLine(i);
@@ -382,84 +501,20 @@
         protected static void Dump<T>(T[,] grid, bool noComma = false)
         {
             var m = grid.GetLength(0);
-            Apply(grid, (i, j,v) =>
+            Apply(grid, (i, j, v) =>
                 {
-                    Console.Write($"{grid[i,j]}");
+                    Console.Write($"{grid[i, j]}");
                     if (!noComma)
                         Console.Write(',');
-                    if (i == m-1)
+                    if (i == m - 1)
                         Console.WriteLine();
                     return v;
                 }
-                );
+            );
             Console.WriteLine();
         }
 
-        static Regex numberRegex = new Regex(@"\d+");
-        static Regex signedNumberRegex = new Regex(@"(\+|-)?\d+");
-
-        // read all numbers out of string, ignore other stuff
-        protected static List<long> Numbers64(string line, bool allowSigned = true)
-
-        {
-            if (allowSigned)
-                return signedNumberRegex.Matches(line).Select(m => long.Parse(m.Value)).ToList();
-            return numberRegex.Matches(line).Select(m => long.Parse(m.Value)).ToList();
-        }
-
-        // read all numbers out of string, ignore other stuff
-        protected static List<int> Numbers(string line, bool allowSigned = true)
-        {
-            if (allowSigned)
-                return signedNumberRegex.Matches(line).Select(m => int.Parse(m.Value)).ToList();
-            return numberRegex.Matches(line).Select(m => int.Parse(m.Value)).ToList();
-        }
-
-        /// <summary>
-        /// Apply action over grid
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="grid"></param>
-        /// <param name="func"></param>
-        protected static void Apply<T>(T[,] grid, Action<T> func)
-        {
-            for (var i = 0; i < grid.GetLength(0); ++i)
-            for (var j = 0; j < grid.GetLength(1); ++j)
-                func(grid[i, j]);
-        }
-
-        // i,j,k grid value to new grid value
-        protected void Apply<T>(T[,,] grid, Func<int, int, int, T, T> func)
-        {
-            for (var k = 0; k < grid.GetLength(2); ++k)
-            for (var j = 0; j < grid.GetLength(1); ++j)
-            for (var i = 0; i < grid.GetLength(0); ++i)
-                grid[i, j, k] = func(i, j, k, grid[i, j, k]);
-        }
-        protected void Apply<T>(T[,,,] grid, Func<int, int, int, int, T, T> func)
-        {
-            for (var l = 0; l < grid.GetLength(3); ++l)
-            for (var k = 0; k < grid.GetLength(2); ++k)
-            for (var j = 0; j < grid.GetLength(1); ++j)
-            for (var i = 0; i < grid.GetLength(0); ++i)
-                grid[i, j, k, l] = func(i, j, k, l, grid[i, j, k, l]);
-        }
-
-        // i,j,grid value to new grid value
-        protected static int Count<T>(T[,] grid, Func<T,bool> func)
-        {
-            var count = 0;
-            Apply(grid,v=>count += func(v)?1:0);
-            return count;
-        }
-
-        // i,j,grid value to new grid value
-        protected static void Apply<T>(T[,] grid, Func<int,int,T,T> func)
-        {
-            for (var j = 0; j < grid.GetLength(1); ++j)
-            for (var i = 0; i < grid.GetLength(0); ++i)
-                grid[i,j] = func(i,j,grid[i, j]);
-        }
+        #endregion
 
         /// <summary>
         /// Call action on each (i,j) pair on line, inclusive
@@ -473,56 +528,6 @@
         {
             foreach (var (i, j) in DDA.Dim2(x0, y0, x1, y1))
                 func(i, j);
-        }
-
-        /// <summary>
-        /// Get grid item if in bounds, else default
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="grid"></param>
-        /// <param name="i"></param>
-        /// <param name="j"></param>
-        /// <param name="def"></param>
-        /// <returns></returns>
-        public static T Get<T>(T[,] grid, int i, int j, T def)
-        {
-            var w = grid.GetLength(0);
-            var h = grid.GetLength(1);
-            if (i < 0 || j < 0 || w <= i || h <= j) return def;
-            return grid[i, j];
-        }
-        public static T Get<T>(T[,,] grid, int i, int j, int k, T def)
-        {
-            var w = grid.GetLength(0);
-            var h = grid.GetLength(1);
-            var d = grid.GetLength(2);
-
-            if (i < 0 || j < 0 || k < 0 || w <= i || h <= j || d<=k) return def;
-            return grid[i, j,k];
-        }
-
-        protected T Get<T>(T[,,,] grid, int i, int j, int k, int q, T def)
-        {
-            var w = grid.GetLength(0);
-            var h = grid.GetLength(1);
-            var d = grid.GetLength(2);
-            var r = grid.GetLength(3);
-
-            if (i < 0 || j < 0 || k < 0 || q < 0 || w <= i || h <= j || d <= k || r <= q) return def;
-            return grid[i, j, k, q];
-        }
-
-        /// <summary>
-        /// split line into words on char, to list, remove empty
-        /// </summary>
-        /// <param name="line"></param>
-        /// <param name="sp"></param>
-        /// <param name="opts"></param>
-        /// <returns></returns>
-        public static List<string> Split(string line, char sp = ' ', StringSplitOptions opts = StringSplitOptions.RemoveEmptyEntries)
-        {
-            var words = line.Split(sp, opts);
-            return words.ToList();
         }
 
         public static void Assert(bool val)
@@ -548,8 +553,103 @@
             }
         }
 
+        // todo- make this general, use elsewhere
+        // group lines by size of group or by regex match
+        // if groupSize != -1, grouped by size
+        // else lines appended with \n, then regex splits, then \n removed from each, 
+        // default splits on \n\n (a blank line)
+        public static List<List<string>> Group(IEnumerable<string> lines, int size = -1, string matchPattern = "\n\n")
+        {
+            if (size > 0)
+                return lines.Chunk(size).Select(arr => arr.ToList()).ToList();
 
-        #endregion
+            var all = lines.Aggregate("", (a, b) => a + "\n" + b);
+            var chunks = Regex.Split(all, matchPattern);
+            //var gps = all.Split(match, StringSplitOptions.RemoveEmptyEntries);
+            return chunks
+                .Select(g => g.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                .Select(s => s.ToList()).ToList();
+        }
+
+        /// <summary>
+        /// Tally items, returning list of (count,item)
+        /// </summary>
+        public static List<(int count, T item)> Tally<T>(IEnumerable<T> items)
+        {
+            var d = new Dictionary<T, int>();
+            foreach (var item in items)
+            {
+                if (!d.ContainsKey(item))
+                    d.Add(item, 0);
+                d[item]++;
+            }
+            return d.Select(p => (p.Value, p.Key)).ToList();
+        }
+
+        /// <summary>
+        /// Mutate collection in place
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="func"></param>
+        public void Mutate<T>(IList<T> items, Func<int, T, T> func)
+        {
+            for (var i = 0; i < items.Count; ++i)
+                items[i] = func(i, items[i]);
+        }
+
+        /// <summary>
+        /// Mutate collection in place
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <param name="func"></param>
+        // modify item in place, over increasing i, allowing telescoping rewrites
+        public void Mutate<T>(IList<T> items, Func<int, T> func)
+        {
+            for (var i = 0; i < items.Count; ++i)
+                items[i] = func(i);
+        }
+
+        /// <summary>
+        /// 27 3d neighbors
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="gg"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="k"></param>
+        /// <param name="def"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Nbrs3<T>(T[,,] gg, int i, int j, int k, T def)
+        {
+            for (var di = -1; di <= 1; ++di)
+                for (var dj = -1; dj <= 1; ++dj)
+                    for (var dk = -1; dk <= 1; ++dk)
+                    {
+                        if (di == 0 && dj == 0 && dk == 0) continue;
+                        yield return Get(gg, i + di, j + dj, k + dk, def);
+                    }
+        }
+
+        /// <summary>
+        /// 8 2d neighbors
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="gg"></param>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="def"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Nbrs2<T>(T[,] gg, int i, int j, T def)
+        {
+            for (var di = -1; di <= 1; ++di)
+                for (var dj = -1; dj <= 1; ++dj)
+                {
+                    if (di == 0 && dj == 0) continue;
+                    yield return Get(gg, i + di, j + dj, def);
+                }
+        }
 
     }
 }

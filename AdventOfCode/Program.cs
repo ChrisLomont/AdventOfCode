@@ -1,8 +1,12 @@
-﻿using Lomont.AdventOfCode;
+﻿// Chris Lomont
 
+using Lomont.AdventOfCode;
+
+// https://github.com/ChrisLomont/AdventOfCode
 
 // create files for a year of stuff
 //Utils.MakeYearFiles(2020, AdventOfCode.path);
+//Utils.MakeYearFiles(2023, @"<paste in path to where the '2024' dir goes>"); 
 //RunDays(1, 25, 2019);
 
 //Memoizer.Test();
@@ -13,7 +17,13 @@
 // RunDays(A,B) to get A through B
 // RunDays(A,B,y1,y2) to get A through B on years y1 through y2
 
-RunDays(1, 25, 2019,2022);
+//RunDays(1, 25, 2019,2022);
+
+// auto load needs access token, read this
+// https://mmhaskell.com/blog/2023/1/30/advent-of-code-fetching-puzzle-input-using-the-api
+// put session into text file names session.txt in exe directory
+
+RunDays(2,2);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)

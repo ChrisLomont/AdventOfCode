@@ -26,7 +26,7 @@
 
             void MakeFile(string filename, string text)
             {
-                filename = path + filename;
+                filename = Path.Combine(path,filename);
                 if (File.Exists(filename))
                     Console.WriteLine($"ERROR: Filename {filename} exists");
                 else
@@ -37,7 +37,7 @@
             }
             void Dir(string dirName)
             {
-                dirName = path + dirName;
+                dirName = Path.Combine(path,dirName);
                 if (Directory.Exists(dirName))
                     Console.WriteLine($"ERROR: directory {dirName} exists");
                 else
