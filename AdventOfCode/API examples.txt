@@ -1,0 +1,99 @@
+﻿// examples of items in code
+
+
+int BitCount(long v)
+
+// Tally items, returning list of (count,item)
+List<(int count, T item)> Tally<T>(IEnumerable<T> items)
+
+Set<T> class: 
+consruct from range
+add iem
+add range of items
+& Intersection, 
+| Union, 
+- Difference, 
+^ SynmmetricDifference, 
+enumerate, 
+count, 
+contains, 
+<= , >= subset
+<, > strict subset
+== equals
+
+Tree
+  - static Tree Parse1(string line)  parse delimited tree, auto detect delimiter or specify
+  - Dump
+
+
+// Breadth first search (BFS) over a type, given some functors
+// NOTE: path length is 1 longer than number of steps! includes both ends!
+public static List<T> BreadthFirstSearch<T>(
+    Func<T, IEnumerable<T>> getNeighbors,
+    IEnumerable<T> itemsToEnqueue,
+    IEnumerable<T>? itemsToMarkAsVisited = null,
+    Func<T,bool>? visit = null // return true to return path here
+    )  where T:notnull
+
+
+     /*
+                    //foreach (var line in ReadLines()) { }
+            // var (w,h,g) = DigitGrid();
+            // var (w,h,g) = CharGrid();
+            // Dump(g);
+            // ProcessAllLines(new() { ... regex->action list ... });
+
+         ********************************** day 2 2023 **********************************************
+            var (sum, gameIndex) = (0, 0);
+            var (max, temp, cap) = (new vec3(), new vec3(), new vec3(12, 13, 14));
+            // Game 5: 3 red, 17 green, 10 blue; 9 blue, 5 green; 14 green, 9 blue, 11 red
+            ProcessAllLines(new() {
+                    { @"Game \d+:", (_, n) => {
+                            gameIndex = n;
+                            max = new vec3();
+                            temp = new vec3(); } },
+                    { @"\d+ red",   (_, n) => temp.x = n },
+                    { @"\d+ green", (_, n) => temp.y = n },
+                    { @"\d+ blue",  (_, n) => temp.z = n },
+                    { ",",           _     => { } },
+                    { " ",           _     => { } },
+                    { ";",           _     => max = vec3.Max(max, temp) },
+                    { "",            _     => { // end of line
+                            max = vec3.Max(max, temp);
+                            sum += part2 ? (max.x * max.y * max.z) : (max <= cap ? gameIndex : 0); }}
+                    });
+            return sum;        
+
+        *******************************************************************
+              var (w, h, g) = CharGrid();
+         
+
+            var (w,h,g) = DigitGrid();
+
+         Apply(g, (i, j, v) =>
+            {
+                var sc = Ok1(i, j);
+                sum += sc;
+                if (sc > 0)
+                {
+                    dir[i, j] = new(100, 100);
+                    attractors.Add(i * scale + j, 0);
+                }
+
+                return v;
+            });
+
+         */
+
+        /*
+         * todo nicer start:
+            throw new NotImplementedException("Year 2023, day 04 not implemented");
+            int ans1 = 0, ans2 = 0;
+
+            //foreach (var line in ReadLines()) { }
+            // var (w,h,g) = DigitGrid();
+            // var (w,h,g) = CharGrid();
+            // ProcessAllLines(new() { ... regex->action list ... });
+
+            return part2?ans2:ans1;
+         */

@@ -23,8 +23,8 @@ namespace Lomont.AdventOfCode._2022
         {
             //var p1 = AStarPath();
             //return p1.Count == 481;
-            //return BFSSoln(part2);
-            return FloodFillSoln(part2); // draws pretty stuff
+            return BFSSoln(part2);
+            //return FloodFillSoln(part2); // draws pretty stuff
         }
 
         long BFSSoln(bool part2)
@@ -58,42 +58,44 @@ namespace Lomont.AdventOfCode._2022
             Func<vec3, bool> isDone;
             Func<vec3, vec3, bool> isLegal;
 
+            Func<vec3,bool> isBdd = v => zero <= v && v <= bound;
+
             if (part2)
             {
                 visited.Add(end);
                 q.Enqueue((0, end));
                 isDone = v => g[v.x, v.y] == 'a'; // first a hit is it
-                isLegal = (nxt, v) => !(g[nxt.x, nxt.y] - g[v.x, v.y] < -1);
+                isLegal = (nxt, v) => isBdd(nxt) &&  !(g[nxt.x, nxt.y] - g[v.x, v.y] < -1);
             }
             else
             {
                 visited.Add(start);
                 q.Enqueue((0, start));
                 isDone = v => v == end; // first to reach end
-                isLegal = (nxt, v) => g[nxt.x, nxt.y] - g[v.x, v.y] <= 1;
+                isLegal = (nxt, v) => isBdd(nxt) && g[nxt.x, nxt.y] - g[v.x, v.y] <= 1;
             }
 
-            while (q.Any())
+            Func<vec3, List<vec3>> nbrs = cur =>
             {
-                var (d, cur) = q.Dequeue();
+                List<vec3> nbrs = new();
                 foreach (var dir in dirs)
                 {
                     var nxt = dir + cur;
-                    if (zero <= nxt && nxt <= bound &&
-                        !visited.Contains(nxt) &&
-                        isLegal(nxt, cur)
-                       )
-                    {
-                        if (isDone(nxt))
-                            return d + 1;
-                        visited.Add(nxt);
-                        q.Enqueue((d + 1, nxt));
-                    }
-
+                    if (isLegal(nxt, cur))
+                        nbrs.Add(nxt);
                 }
-            }
+                return nbrs;
+            };
 
-            throw new Exception();
+            var p = Search.BreadthFirstSearch(
+                nbrs,
+                q.Select(v => v.Item2),
+                visited,
+                isDone
+                );
+            
+            return p.Count-1; // # of items one more than number of steps to get there
+            
         }
 
         long FloodFillSoln(bool part2)

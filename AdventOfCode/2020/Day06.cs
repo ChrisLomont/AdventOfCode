@@ -7,9 +7,6 @@ namespace Lomont.AdventOfCode._2020
 
       
 
-        // todo -= make a tally object
-        // todo - move BitCount to AOC base
-
         public override object Run(bool part2)
         {
             var count = 0;

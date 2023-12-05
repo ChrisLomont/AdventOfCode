@@ -160,7 +160,6 @@
                     return vals;
                 if (maxBits == -1 && maxPackets == -1)
                 {
-                    //Console.WriteLine("TODO?");
                     return vals;
                 }
 
