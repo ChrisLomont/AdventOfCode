@@ -664,15 +664,51 @@ namespace Lomont.AdventOfCode
             if (singleLine) output.WriteLine();
         }
 
+
+        public class DumpColors<T> : List<Func<T, (bool match, ConsoleColor color)>>
+        {
+
+        }
         /// <summary>
         /// Dump 2d grid
         /// </summary>
-        protected static void Dump<T>(T[,] grid, bool noComma = false)
+        protected static void Dump<T>  (
+            T[,] grid,
+            bool noComma = false,
+            DumpColors<T> ? colors = null
+        ) 
         {
             var m = grid.GetLength(0);
+            var (back, fore) = (Console.BackgroundColor, Console.ForegroundColor);
+
+            void Restore()
+            {
+                Console.ForegroundColor = fore;
+                Console.BackgroundColor = back;
+            }
+
             Apply(grid, (i, j, v) =>
                 {
-                    Console.Write($"{grid[i, j]}");
+                    var ch = grid[i, j];
+                    if (colors != null)
+                    {
+                        foreach (var s in colors)
+                        {
+                            var (match, color) = s(ch);
+                            if (match)
+                            {
+                                Console.ForegroundColor = color;
+                                break;
+                            }
+                        }
+                    }
+
+                    Console.Write($"{ch}");
+                    if (colors != null)
+                    {
+                        Restore();
+                    }
+
                     if (!noComma)
                         Console.Write(',');
                     if (i == m - 1)

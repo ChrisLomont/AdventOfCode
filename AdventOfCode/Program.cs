@@ -23,7 +23,7 @@ using Lomont.AdventOfCode;
 // https://mmhaskell.com/blog/2023/1/30/advent-of-code-fetching-puzzle-input-using-the-api
 // put session into text file names session.txt in exe directory
 
-RunDays(2,2);
+RunDays(4,4);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)

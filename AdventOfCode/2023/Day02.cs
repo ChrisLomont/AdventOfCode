@@ -7,7 +7,7 @@ namespace Lomont.AdventOfCode._2023
     {
         /*
          // top both
- 1) Dec 02  00:01:34  Corentin THOMASSET (AoC++)
+  1) Dec 02  00:01:34  Corentin THOMASSET (AoC++)
   2) Dec 02  00:01:37  tung491
   3) Dec 02  00:02:52  xiaowuc1
   4) Dec 02  00:02:58  5space
@@ -46,19 +46,18 @@ Day       Time    Rank  Score       Time   Rank  Score
             ProcessAllLines(new() {
                     { @"Game \d+:", (_, n) => {
                             gameIndex = n;
-                            max = new();
-                            temp = new(); } },
+                            max = new vec3();
+                            temp = new vec3(); } },
                     { @"\d+ red",   (_, n) => temp.x = n },
                     { @"\d+ green", (_, n) => temp.y = n },
                     { @"\d+ blue",  (_, n) => temp.z = n },
                     { ",",           _     => { } },
                     { " ",           _     => { } },
                     { ";",           _     => max = vec3.Max(max, temp) },
-                    { "",            _     => { 
-                            max = vec3.Max(max, temp); 
-                            sum += part2?(max.x * max.y * max.z):(max<=cap?gameIndex:0); }
-                    } // end of line
-                });
+                    { "",            _     => { // end of line
+                            max = vec3.Max(max, temp);
+                            sum += part2 ? (max.x * max.y * max.z) : (max <= cap ? gameIndex : 0); }}
+                    });
             return sum;
         }
 
