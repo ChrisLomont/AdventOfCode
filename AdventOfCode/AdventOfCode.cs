@@ -102,10 +102,11 @@ namespace Lomont.AdventOfCode
                     return;
                 if (ht.CookieContainer == null)
                     ht.CookieContainer = new CookieContainer();
+                var sessionText = File.ReadAllText(Path.Join(DataPath,"session.txt"));
                 ht.CookieContainer.Add(
                     new Cookie(
                         "session",
-                        "53616c7465645f5fdb8fc887bd8c3f4abbe64e0c211cf95708e73419c716dec244e72edc25173344c4bdb53e65e88dbf885bf6238ce63085d20ba7845ef762a0",
+                        sessionText,
                         "",
                         "adventofcode.com"
                     ));

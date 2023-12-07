@@ -4,8 +4,17 @@ namespace Lomont.AdventOfCode._2023
     {
         public override object Run(bool part2)
         {
-            throw new NotImplementedException("Year 2023, day 07 not implemented");
-            return 0;
+            int ans1 = 0, ans2 = 0;
+
+            // var (w,h,g) = DigitGrid();
+            // var (w,h,g) = CharGrid();
+            // ProcessAllLines(new() { ... regex->action list ... });
+            foreach (var line in ReadLines())
+            {
+
+            }
+
+            return part2?ans2:ans1;
         }
     }
 }

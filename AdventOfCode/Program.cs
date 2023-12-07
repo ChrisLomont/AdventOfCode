@@ -24,7 +24,10 @@ using Lomont.AdventOfCode;
 // https://mmhaskell.com/blog/2023/1/30/advent-of-code-fetching-puzzle-input-using-the-api
 // put session into text file names session.txt in exe directory
 
-RunDays(5,5);
+// todo - maybe at end of run, allow some keypress to add more commands, set next test, etc., then save that fo rnext run
+// then don't have to change this every time (only if change crashes?)
+
+RunDays(6,6);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)
