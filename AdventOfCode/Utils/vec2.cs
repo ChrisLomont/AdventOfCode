@@ -118,8 +118,6 @@ namespace Lomont.AdventOfCode.Utils
         public long LengthSquared => x * x + y * y;
         #endregion
 
-
-
         #region ordering
 
         // each left component <= corresponding right

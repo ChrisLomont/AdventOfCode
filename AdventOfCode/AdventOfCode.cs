@@ -122,6 +122,127 @@ namespace Lomont.AdventOfCode
             }
         }
 
+        public static double Wrap01(double value)
+        {
+            // todo - prove correct carefully
+            return value - Math.Floor(value);
+        }
+
+        public static double Wrap(double value, double min, double max)
+        {
+            if (max == min) return min; // collapse to point
+            // todo - prove correct carefully
+            var del = max - min;
+            var scaled = (value - min) / del; // shifted and scaled so min = 0, max = 1
+            var wrapped = Wrap01(scaled);
+            var ans = wrapped * del + min;
+            Trace.Assert(min <= ans && ans < max);
+            return ans;
+
+        }
+
+        /// <summary>
+        /// Clamp value into [0,1]
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="tolerance"></param>
+        /// <returns></returns>
+        public static double Clamp01(double value, double tolerance = 0.00001)
+        {
+            if (0 <= value && value <= 1) return value;
+            if (value < 0 && -tolerance < value) return 0;
+            if (value > 1 && 1 + tolerance > value) return 1;
+
+            Trace.TraceError("Clamp01 color parse error");
+            throw new Exception("Value out of tolerance");
+        }
+
+        static (double red, double green, double blue) HSLVtoRGB(
+           double hue, double saturation, double lightnessOrValue, bool useValue
+       )
+        {
+            hue = Wrap(hue, 0, 360);
+            var lv = lightnessOrValue;
+            var s = saturation;
+
+            double red, green, blue;
+            const double tolerance = 0.0001; // values this close to 0 are treated as equal
+            if (saturation <= tolerance)
+            {
+                // achromatic (grey)
+                red = green = blue = lightnessOrValue;
+            }
+            else
+            { // chromatic case
+                double c, m;
+                if (useValue)
+                {
+                    c = lv * s;
+                    m = lv - c;
+                }
+                else
+                {
+                    c = (1 - Math.Abs(2 * lv - 1)) * s; // chroma
+                    m = lv - c * 0.5;
+                }
+
+                var hp = hue / 60; // sector 0 to 5
+                double ab = (hp / 2 - Math.Floor(hp / 2)) * 2; // hp mod 2
+                double x = c * (1 - Math.Abs(ab - 1));
+                red = green = blue = 0;
+                if (hp < 1)
+                {
+                    red = c;
+                    green = x;
+                }
+                else if (hp < 2)
+                {
+                    red = x;
+                    green = c;
+                }
+                else if (hp < 3)
+                {
+                    green = c;
+                    blue = x;
+                }
+                else if (hp < 4)
+                {
+                    green = x;
+                    blue = c;
+                }
+                else if (hp < 5)
+                {
+                    blue = c;
+                    red = x;
+                }
+                else if (hp < 6)
+                {
+                    blue = x;
+                    red = c;
+                }
+                red += m;
+                green += m;
+                blue += m;
+            }
+            // sanity check
+            double tolerance2 = 0.005;
+            Trace.Assert(0 - tolerance2 <= red && red <= 1.0 + tolerance2);
+            Trace.Assert(0 - tolerance2 <= green && green <= 1.0 + tolerance2);
+            Trace.Assert(0 - tolerance2 <= blue && blue <= 1.0 + tolerance2);
+            red = Clamp01(red);
+            green = Clamp01(green);
+            blue = Clamp01(blue);
+
+            return (red, green, blue);
+        }
+
+        // uhue 0-360, others 0-1
+        public static (double r, double g, double b) HSL2RGB(double h, double s, double l)
+        {
+            var (r,g,b) = HSLVtoRGB(h, s, l, false);
+            return (r, g, b);
+        }
+
         public string GetFileName()
         {
             var day = Int32.Parse(this.GetType().Name.Substring(3));
@@ -240,6 +361,10 @@ namespace Lomont.AdventOfCode
             if (i < 0 || j < 0 || w <= i || h <= j) return def;
             return grid[i, j];
         }
+        public static T Get<T>(T[,] grid, vec2 v, T def)
+        {
+            return Get(grid, v.x, v.y, def);
+        }
         public static T Get<T>(T[,,] grid, int i, int j, int k, T def)
         {
             var w = grid.GetLength(0);
@@ -327,6 +452,20 @@ namespace Lomont.AdventOfCode
             }
 
             return (w, h, g);
+        }
+
+        protected static void Apply<T>(T[,] grid, Func<T, T> func)
+        {
+            for (var i = 0; i < grid.GetLength(0); ++i)
+            for (var j = 0; j < grid.GetLength(1); ++j)
+                grid[i, j] = func(grid[i, j]);
+        }
+        protected static void Apply<T>(T[,,] grid, Func<T, T> func)
+        {
+            for (var i = 0; i < grid.GetLength(0); ++i)
+            for (var j = 0; j < grid.GetLength(1); ++j)
+            for (var k = 0; k < grid.GetLength(2); ++k)
+                grid[i, j, k] = func(grid[i, j, k]);
         }
 
 
@@ -666,7 +805,9 @@ namespace Lomont.AdventOfCode
         }
 
 
-        public class DumpColors<T> : List<Func<T, (bool match, ConsoleColor color)>>
+        // map (item,i,j) to (is colored, foreground hex color)
+        // background color can be appended with ;#rrggbb
+        public class DumpColors<T> : List<Func<T, int,int, (bool match, string)>>
         {
 
         }
@@ -682,6 +823,22 @@ namespace Lomont.AdventOfCode
             var m = grid.GetLength(0);
             var (back, fore) = (Console.BackgroundColor, Console.ForegroundColor);
 
+            (int r, int g, int b) FromHexColor(string s)
+            {
+                s = s.ToUpper();
+                int Hex(string s2)
+                {
+                    var hs = "0123456789ABCDEF";
+                    return hs.IndexOf(s2[0]) * 15 + hs.IndexOf(s2[1]);
+                }
+
+                if (s.StartsWith('#')) s= s.Substring(1);
+                var r = Hex(s.Substring(0,2));
+                var g = Hex(s.Substring(2, 2));
+                var b = Hex(s.Substring(4, 2));
+                return (r, g, b);
+            }
+
             void Restore()
             {
                 Console.ForegroundColor = fore;
@@ -691,20 +848,37 @@ namespace Lomont.AdventOfCode
             Apply(grid, (i, j, v) =>
                 {
                     var ch = grid[i, j];
+                    var colored = false;
                     if (colors != null)
                     {
                         foreach (var s in colors)
                         {
-                            var (match, color) = s(ch);
+                            var (match, color) = s(ch,i,j);
                             if (match)
-                            {
-                                Console.ForegroundColor = color;
+                            { //Console.WriteLine("\x1b[36mTEST\x1b[0m");
+
+                                // ESC[38;2;⟨r⟩;⟨g⟩;⟨b⟩m Select RGB foreground color
+                                // ESC[48; 2;⟨r⟩;⟨g⟩;⟨b⟩m Select RGB background color
+                                var cc = color.Split(';');
+                                var (r, g, b) = FromHexColor(cc[0]);
+                                Console.Write($"\x1b[38;2;{r};{g};{b}m");
+                                if (cc.Length > 1)
+                                {
+                                    (r, g, b) = FromHexColor(cc[1]);
+                                     Console.Write($"\x1b[48;2;{r};{g};{b}m");
+                                }
+                                //Console.ForegroundColor = color;
+                                colored = true;
                                 break;
                             }
                         }
                     }
 
                     Console.Write($"{ch}");
+                    if (colored)
+                    {
+                        Console.Write("\x1b[0m");
+                    }
                     if (colors != null)
                     {
                         Restore();

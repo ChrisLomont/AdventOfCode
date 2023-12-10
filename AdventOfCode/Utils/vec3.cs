@@ -127,8 +127,6 @@ public class vec3 : IEquatable<vec3>
     public long LengthSquared => x * x + y * y + z * z;
     #endregion
 
-
-
     #region ordering
 
     // each left component <= corresponding right

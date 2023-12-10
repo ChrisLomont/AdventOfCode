@@ -99,4 +99,39 @@ public static List<T> BreadthFirstSearch<T>(
             // ProcessAllLines(new() { ... regex->action list ... });
 
             return part2?ans2:ans1;
+
+
+            Better still:
+
+             object Run1()
+        {
+            long answer = 0;
+
+            foreach (var line in ReadLines())
+            {
+                var nums = Numbers64(line);
+            }
+
+            return answer;
+        }
+
+        object Run2()
+        {
+            long answer = 0;
+
+            foreach (var line in ReadLines())
+            {
+                var nums = Numbers64(line);
+            }
+
+            return answer;
+        }
+
+        public override object Run(bool part2)
+        {
+            return part2 ? Run2() : Run1();
+        }
+
+
+
          */
