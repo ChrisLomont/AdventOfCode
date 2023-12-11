@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.Design;
 using System.Net;
+using System.Text.Json.Serialization;
 using System.Xml;
 
 namespace Lomont.AdventOfCode
@@ -343,6 +344,46 @@ namespace Lomont.AdventOfCode
         {
             return (g.GetLength(0), g.GetLength(1), g.GetLength(2));
         }
+
+        // iterate down row
+        public static IEnumerable<T> Row<T>(T[,] g, int row)
+        {
+            var (w, _) = Size(g);
+            for (var col = 0; col < w; ++col)
+                yield return g[col, row];
+        }
+        // iterate down col
+        public static IEnumerable<T> Col<T>(T[,] g, int col)
+        {
+            var (_, h) = Size(g);
+            for (var row = 0; row < h; ++row)
+                yield return g[col, row];
+        }
+
+        // enumerate (i,j) of things that match predicate
+        public static IEnumerable<vec2> Gather<T>(T[,] g, Func<T, bool> predicate)
+        {
+            var (w, h) = Size(g);
+            for (var i = 0; i < w; ++i)
+            for (var j = 0; j < h; ++j)
+            {
+                if (predicate(g[i, j]))
+                    yield return new vec2(i, j);
+            }
+
+        }
+        public static IEnumerable<vec2> Gather<T>(T[,] g, Func<T, int,int, bool> predicate)
+        {
+            var (w, h) = Size(g);
+            for (var i =0; i < w; ++i)
+            for (var j = 0; j < h; ++j)
+            {
+                if (predicate(g[i,j],i,j))
+                    yield return new vec2(i, j);
+            }
+
+        }
+
 
 
         /// <summary>

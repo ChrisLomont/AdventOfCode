@@ -98,7 +98,7 @@ public static List<T> BreadthFirstSearch<T>(
             // var (w,h,g) = CharGrid();
             // ProcessAllLines(new() { ... regex->action list ... });
 
-            return part2?ans2:ans1;
+            return answer;
 
 
             Better still:
