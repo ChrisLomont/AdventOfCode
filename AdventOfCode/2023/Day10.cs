@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using static Lomont.AdventOfCode.AdventOfCode;
 
@@ -56,11 +58,13 @@ Day       Time    Rank  Score       Time   Rank  Score
                     g[start.x, start.y] = key;
 
             Dictionary<vec2, int> path = new();
+            List<vec2> lpath = new();
             var cur = start;
             var prev = new vec2(-5, -5); // far off screen
             do
             {
                 path.Add(cur, path.Count + 1);
+                lpath.Add(cur);
                 var (m1, m2) = tileDirs[g[cur.x, cur.y]];
                 (prev, cur) = (cur, (cur + m1 != prev) ? cur + m1 : cur + m2);
             } while (cur != start);
@@ -125,6 +129,23 @@ Day       Time    Rank  Score       Time   Rank  Score
             Console.WriteLine("-----");
             Dump(g, noComma: true, colors);
             Console.WriteLine("-----");
+
+            // Shoelace formula and Pick's Theorem
+            // 2A=sum det((xi xi+1),(yi yi+1) and A=i+b/2-1
+            long ans = 0;
+            for (int i = 0; i < lpath.Count; ++i)
+            {
+                var p1 = lpath[i];
+                var p2 = lpath[(i + 1) % lpath.Count];
+                ans += p1.x * p2.y - p1.y * p2.x;
+            }
+
+            // (sum det)/2 = A = i + (pathlen)/2-1
+            
+            // i = ans/2 - pathlen/2 + 1
+            var ins = (Math.Abs(ans) - lpath.Count) / 2 + 1;
+            Trace.Assert(ins == insides.Count);
+
 
             return insides.Count;
 

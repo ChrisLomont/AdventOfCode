@@ -258,10 +258,14 @@ namespace Lomont.AdventOfCode
         /// Get all lines from the data file
         /// </summary>
         /// <returns></returns>
-        protected List<string> ReadLines()
-        {
-            return File.ReadAllLines(GetFileName()).ToList();
-        }
+        protected List<string> ReadLines() => File.ReadAllLines(GetFileName()).ToList();
+
+        /// <summary>
+        /// Get all text
+        /// </summary>
+        /// <returns></returns>
+        protected string ReadText() => File.ReadAllText(GetFileName());
+    
 
         #endregion
 
@@ -448,14 +452,18 @@ namespace Lomont.AdventOfCode
         /// Get file or lines into a char grid. Right pad if needed with char filler
         /// </summary>
         /// <returns></returns>
-        protected (int width, int height, char[,] grid) CharGrid(List<string>? lines = null, char filler = ' ')
+        protected (int width, int height, char[,] grid) CharGrid(IEnumerable<string>? lines1 = null, char filler = ' ')
         {
-            if (lines == null)
+            List<string> lines;
+
+            if (lines1 == null)
                 lines = ReadLines();
+            else
+                lines = lines1.ToList();
             var w = lines.Max(b => b.Length);
             var h = lines.Count;
             char[,] g = new char[w,h];
-            for (var i =0; i < w; ++i)
+            for (var i = 0; i < w; ++i)
             for (var j = 0; j < h; ++j)
             {
                 if (i < lines[j].Length)

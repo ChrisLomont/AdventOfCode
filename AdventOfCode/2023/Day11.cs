@@ -48,7 +48,7 @@ Day       Time    Rank  Score       Time   Rank  Score
         public override object Run(bool part2)
         {
             // replace empty row or column with this many
-            long expansion = part2 ? 1_000_000 : 2;
+            long ex = part2 ? 1_000_000 : 2;
 
             var (w, h, g) = CharGrid();
 
@@ -61,14 +61,10 @@ Day       Time    Rank  Score       Time   Rank  Score
 
             return answer;
 
-            long Cost(vec2 a, vec2 b) => Score(a.x, b.x, expandCols) + Score(a.y, b.y, expandRows);
-
-            long Score(long a, long b, List<int> items)
-            {
-                (a, b) = (Math.Min(a, b), Math.Max(a, b));
-                return items.Count(c => a <= c && c <= b) * (expansion - 1) + Math.Abs(a - b);
-            }
-
+            long Cost(vec2 a, vec2 b) => 
+                Score(a.x, b.x, expandCols) + Score(a.y, b.y, expandRows);
+            long Score(long a, long b, List<int> items) => 
+                items.Count(c => Math.Min(a,b) <= c && c <= Math.Max(a,b)) * (ex - 1) + Math.Abs(a - b);
         }
     }
 
