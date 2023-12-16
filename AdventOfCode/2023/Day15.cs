@@ -44,80 +44,43 @@ Day       Time    Rank  Score       Time   Rank  Score
         517315        247763
 
          */
+
         public override object Run(bool part2)
         {
-            var boxes = new List<(string label, int lens)>[256];
-            for (var i = 0; i < 256; ++i)
-                boxes[i] = new();
-
-            long answer1 = 0;
+            var boxes = Enumerable.Range(0, 256).Select(i => new List<(string label, int lens)>()).ToArray();
 
             static int Hash(string ht) =>
                 Encoding.ASCII.GetBytes(ht).Aggregate(0, (val, c) => (17 * (val + c)) & 255);
 
-            foreach (var line in ReadLines())
+            if (!part2)
+                return ReadLines().Select(line => line.Split(',').Select(Hash).Sum()).Sum();
+
+            var rr = new Regex(@"(?<label>[a-zA-Z]+)(?<op>-|=)(?<num>\d+)?");
+
+            foreach (var command in ReadLines().SelectMany(line => line.Split(',')))
             {
-                var commands = line.Split(',');
-                foreach (var command in commands)
+                var mm = rr.Match(command);
+                var label = mm.Groups["label"].Value;
+                var remove = mm.Groups["op"].Value[0] == '-';
+                var box = boxes[Hash(label)];
+                var entry = box.FirstOrDefault(b => b.label == label);
+
+                if (remove)
                 {
-                    answer1 += Hash(command);
-
-                    if (part2)
-                    {
-                        var csplit = command.Split(new char[] { '-', '=' });
-                        var label = csplit[0];
-                        var val = Hash(label);
-                        var index = boxes[val].FindIndex(b => b.label == label);
-
-                        if (command.Contains('-'))
-                        {
-                            if (index>=0) // remove lens
-                                boxes[val].RemoveAt(index);
-                        }
-                        else if (command.Contains('='))
-                        {
-                            var num = Int32.Parse(csplit[1]);
-                            if (index<0) // add a new
-                                boxes[val].Add((label, num));
-                            else // replace
-                                boxes[val][index] = (label, num);
-                        }
-                        else
-                            throw new Exception("error!");
-
-
-#if false
-                    Console.WriteLine();
-
-                    Console.WriteLine($"{w} {val}");
-
-                    for (var i = 0; i < boxes.Length; i++)
-                    {
-                        if (boxes[i].Count > 0)
-                        {
-                            Console.Write($"Box {i}:");
-                            foreach (var c in boxes[i])
-                                Console.Write($"[{c}] ");
-                            Console.WriteLine();
-                        }
-                    }
-#endif
-                    }
+                    if (entry.label != null)
+                        box.Remove(entry);
+                }
+                else
+                {
+                    var num = Int32.Parse(mm.Groups["num"].Value);
+                    if (entry.label != null)
+                        entry.lens = num;
+                    else
+                        box.Add((label, num));
                 }
             }
 
-            if (part2)
-            {
-                // scoring
-                long answer2 = 0;
-                for (var i = 0; i < boxes.Length; ++i)
-                    for (var j = 0; j < boxes[i].Count; ++j)
-                        answer2 += (i+1) * (j+1) * boxes[i][j].lens;
-
-                return answer2;
-            }
-
-            return answer1;
+            return boxes.Select((b, i) => b.Select((p, j) => (i + 1) * (j + 1) * p.lens).Sum()).Sum();
         }
     }
 }
