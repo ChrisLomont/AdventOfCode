@@ -1,4 +1,6 @@
-﻿namespace Lomont.AdventOfCode.Utils
+﻿using Microsoft.VisualBasic.CompilerServices;
+
+namespace Lomont.AdventOfCode.Utils
 {
     public class vec4 : IEquatable<vec4>
     {
@@ -67,6 +69,12 @@
         {
             x = this.x;
             y = this.y;
+        }
+
+        public int this[int index]
+        {
+            get => vals[index];
+            set => vals[index] = value;
         }
 
         #endregion

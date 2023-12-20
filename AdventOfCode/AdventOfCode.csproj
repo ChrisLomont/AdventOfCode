@@ -17,4 +17,10 @@
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="Lomont.GIFLib">
+      <HintPath>..\..\GIFLib\GIFLib\bin\Debug\net7.0\Lomont.GIFLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

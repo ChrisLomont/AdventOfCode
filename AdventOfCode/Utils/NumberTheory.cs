@@ -3,7 +3,6 @@ using System.Diagnostics.Contracts;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-#if false
 // todo - polish off, put in here
 namespace Lomont.AdventOfCode.Utils
 {
@@ -21,7 +20,40 @@ namespace Lomont.AdventOfCode.Utils
             var d = GCD(a, b);
             return (a / d) * b;
         }
+        public static long LCM(List<long> vals)
+        {
+            var a = vals[0];
+            var b = vals[1];
+            var cur = LCM(a, b);
+            for (int i = 2; i < vals.Count; ++i)
+            {
+                cur = LCM(cur, vals[i]);
+            }
 
+            return cur;
+        }
+
+        // given a,b, get am and bm so that a*am + b*bm = gcd(a,b)
+        public static void ExtendedGCD(long a, long b, out long am, out long bm)
+        {
+            var (oldR, r) = (a, b);
+            var (oldS, s) = (1L, 0L);
+            var (oldT, t) = (0L, 1L);
+
+            while (r != 0)
+            {
+                var quotient = oldR / r;
+                (oldR, r) = (r, oldR - quotient * r);
+                (oldS, s) = (s, oldS - quotient * s);
+                (oldT, t) = (t, oldT - quotient * t);
+            }
+
+            am = oldS;
+            bm = oldT;
+            Trace.Assert(a * am + b * bm == GCD(a, b));
+        }
+
+#if false
 
         public static void Test()
         {
@@ -42,11 +74,10 @@ namespace Lomont.AdventOfCode.Utils
         public static long ChineseRemainderTheorem(long[] n, long[] a)
         {
             var prod = n.Aggregate(1L, (i, j) => i * j);
-            long p;
             var sm = 0L;
             for (var i = 0; i < n.Length; i++)
             {
-                p = prod / n[i];
+                long p = prod / n[i];
                 sm += a[i] * ModularMultiplicativeInverse(p, n[i]) * p;
             }
 
@@ -54,7 +85,7 @@ namespace Lomont.AdventOfCode.Utils
         }
 
         private static long ModularMultiplicativeInverse(long a, long mod)
-        {
+        { 
             long b = a % mod;
             for (long x = 1; x < mod; x++)
             {
@@ -88,26 +119,7 @@ namespace Lomont.AdventOfCode.Utils
 
             return t;
         }
-        void extended_gcd(long a, long b)
-        {
-            var (old_r, r) = (a, b);
-            var (old_s, s) = (1L, 0L);
-            var (old_t, t) = (0L, 1L);
-
-            while (r != 0)
-            {
-                var quotient = old_r / r;
-                (old_r, r) = (r, old_r - quotient * r);
-                (old_s, s) = (s, old_s - quotient * s);
-                (old_t, t) = (t, old_t - quotient * t);
-            }
-
-            // now a*old_s + b*old_t = gcd(a,b)
-
-            // Bézout coefficients (old_s, old_t)
-            // greatest common divisor, old_r
-            // quotients by the gcd (t, s)
-        }
+        
 
         public class GFG
         {
@@ -153,17 +165,7 @@ namespace Lomont.AdventOfCode.Utils
                         "Modular multiplicative inverse is " + res);
                 }
             }
-
-            // Driver Code 
-            public static void Main(string[] args)
-            {
-                int A = 3, M = 11;
-
-                // Function call 
-                modInverse(A, M);
-            }
         }
-
+#endif
     }
 }
-#endif
