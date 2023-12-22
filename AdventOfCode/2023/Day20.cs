@@ -7,28 +7,20 @@ namespace Lomont.AdventOfCode._2023
         // 253302889093151
         // 666795063
 
-        static List<bool> flops = new();
-        static List<Dictionary<string,bool>> conjs = new();
-
         public enum GT {
             FlipFlop,
             Conjunction,
             Broadcaster,
             Unknown
         }
-
-        public class IGate
-        {
-            public GT type;
-            public int stateIndex = 0;
-            public List<string> dests = new();
-        }
-
-   
+        
 
 
         public override object Run(bool part2)
         {
+            List<bool> flops = new();
+            List<Dictionary<string, bool>> conjs = new();
+
             Dictionary<string, (GT type, int stateIndex, List<string> dests)> dict = new();
 
             foreach (var line in ReadLines())
