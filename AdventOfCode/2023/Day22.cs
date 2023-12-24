@@ -87,6 +87,9 @@ First hundred users to get the first star on Day 22:
                 return (b, del.z != 0);
             }
 
+            // gives minor speed factor
+            blocks.Sort((a, b) => a.down[0].z.CompareTo(b.down[0].z));
+
             DropAll(blocks);
 
             static int DropAll(List<cuboid> blocks, int ignoreMe = -1, bool computeAll = true)
