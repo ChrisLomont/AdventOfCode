@@ -16,7 +16,6 @@ namespace Lomont.AdventOfCode.Utils
         public static vec4 One   = new vec4(1, 1, 1,1);
         #endregion
 
-
         #region constructors
         public vec4(int w = 0, int x = 0, int y = 0, int z = 0)
         {

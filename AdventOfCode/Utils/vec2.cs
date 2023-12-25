@@ -7,7 +7,16 @@ using System.Threading.Tasks;
 namespace Lomont.AdventOfCode.Utils
 {
     internal class vec2
+#if false
+        : vecN<int>
     {
+        public vec2(int x = 0, int y = 0) : base(2, x, y)
+        {
+        }
+#else
+        : IEquatable<vec2>
+    {
+
 
         #region constants
         public static vec2 MaxValue = new vec2(int.MaxValue, int.MaxValue);
@@ -203,5 +212,6 @@ namespace Lomont.AdventOfCode.Utils
         public override bool Equals(object? obj) => Equals(obj as vec2);
 
         #endregion
+#endif
     }
 }

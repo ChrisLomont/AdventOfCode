@@ -22,7 +22,7 @@ using Lomont.AdventOfCode;
 // todo - maybe at end of run, allow some keypress to add more commands, set next test, etc., then save that for next run
 // then don't have to change this every time (only if change crashes?)
 
-RunDays(22,22);
+RunDays(25,25);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)
