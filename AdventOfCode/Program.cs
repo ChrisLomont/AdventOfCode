@@ -2,11 +2,14 @@
 
 using Lomont.AdventOfCode;
 
+// https://adventofcode.com/
 // https://github.com/ChrisLomont/AdventOfCode
 
 // create files for a year of stuff
 //Utils.MakeYearFiles(2020, AdventOfCode.path);
 //Utils.MakeYearFiles(2023, @"<paste in path to where the '2024' dir goes>"); 
+//Utils.MakeYearFiles(2024, @"C:\Users\Chris\OneDrive\Code\AdventOfCode\AdventOfCode\"); 
+//return;
 //RunDays(1, 25, 2019);
 
 //Memoizer.Test();
@@ -22,7 +25,7 @@ using Lomont.AdventOfCode;
 // todo - maybe at end of run, allow some keypress to add more commands, set next test, etc., then save that for next run
 // then don't have to change this every time (only if change crashes?)
 
-RunDays(25,25);
+RunDays(8,8);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)

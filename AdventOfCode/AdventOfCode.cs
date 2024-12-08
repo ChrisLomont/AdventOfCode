@@ -78,6 +78,11 @@ namespace Lomont.AdventOfCode
         /// <returns></returns>
         public abstract object Run(bool part2);
 
+        /// <summary>
+        /// get test file suffix to toggle between tests quickly
+        /// <returns></returns>
+        public virtual string TestFileSuffix() => "";
+
 
         #region files
         /// <summary>
@@ -237,7 +242,7 @@ namespace Lomont.AdventOfCode
             return (red, green, blue);
         }
 
-        // uhue 0-360, others 0-1
+        // hue 0-360, others 0-1
         public static (double r, double g, double b) HSL2RGB(double h, double s, double l)
         {
             var (r,g,b) = HSLVtoRGB(h, s, l, false);
@@ -251,7 +256,7 @@ namespace Lomont.AdventOfCode
             var t = this.GetType().FullName;
             Trace.Assert(t != null);
             var year = new Regex(@"\d{4}").Match(t!).Value;
-            return $"{DataPath}/{year}/Data/Day{day:D2}.txt";
+            return $"{DataPath}/{year}/Data/Day{day:D2}{TestFileSuffix()}.txt";
         }
 
         /// <summary>
@@ -503,12 +508,14 @@ namespace Lomont.AdventOfCode
             return (w, h, g);
         }
 
+        // apply function to each entry in grid
         protected static void Apply<T>(T[,] grid, Func<T, T> func)
         {
             for (var i = 0; i < grid.GetLength(0); ++i)
             for (var j = 0; j < grid.GetLength(1); ++j)
                 grid[i, j] = func(grid[i, j]);
         }
+        // apply function to each entry in grid
         protected static void Apply<T>(T[,,] grid, Func<T, T> func)
         {
             for (var i = 0; i < grid.GetLength(0); ++i)
