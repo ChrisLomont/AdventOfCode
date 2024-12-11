@@ -67,7 +67,6 @@ namespace Lomont.AdventOfCode
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception: trying to read web file {ex}");
-
             }
         }
 
