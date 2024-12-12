@@ -173,6 +173,9 @@ namespace Lomont.AdventOfCode.Utils
 
         #endregion
 
+        // 2d "cross" product, is z component of 3D cross product
+        public static int Cross(vec2 a, vec2 b) => a.x * b.y - a.y * b.x;
+
         #region Equality, Inequality, Hash code
 
         //public static bool operator ==(vec2 lhs, vec2 rhs)
