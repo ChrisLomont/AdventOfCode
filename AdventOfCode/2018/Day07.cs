@@ -46,12 +46,13 @@ namespace Lomont.AdventOfCode._2018
 
 
             // CABDFE
-            letters = "CABDFE".ToList();
+            //letters = "CABDFE".ToList();
 
             // fail ABCDGEFIMQJHKSLXNOPRUVZTWY
             //      ABCDGEFIMQJHKSLXNOPRUVZTWY
             // fail ABDWEFGRYHVIKMJLNOPQSTUCZX
-
+            //      ABCDGEFIMQJHKSLXNOPRUVZTWY
+            /*
             var n = letters.Count;
             bool done = false;
             while (!done)
@@ -83,10 +84,14 @@ namespace Lomont.AdventOfCode._2018
                     }
                 }
             }
-            /*
+            */
+
+            // CABDFE
+            //letters.Sort();
             letters.Sort(
                 (x, y) =>
                 {
+                    if (x == y) return 0;
                     foreach (var (fst, lst) in pairs)
                     {
                         if (fst == x && lst == y)
@@ -97,9 +102,9 @@ namespace Lomont.AdventOfCode._2018
 
                     return -x.CompareTo(y);
                 }
-            );*/
+            );
 
-            //letters.Reverse();
+            letters.Reverse();
 
             return letters.Aggregate("", (a, b) => a + b);
         }
