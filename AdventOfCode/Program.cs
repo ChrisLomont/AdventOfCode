@@ -27,7 +27,7 @@ using Lomont.AdventOfCode;
 
 
 //RunDays(7,7,2018);
-RunDays(12,12);
+RunDays(13,13);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)

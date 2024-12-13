@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Security.Cryptography;
 
 namespace Lomont.AdventOfCode._2018
 {
@@ -9,105 +10,169 @@ namespace Lomont.AdventOfCode._2018
     {
         object Run2()
         {
-            long answer = 0;
-
-            foreach (var line in ReadLines())
-            {
-                var nums = Numbers64(line);
-            }
-
-            return answer;
-        }
+            // for each letter, point to predecessors
+            Dictionary<char, string> parents = new();
 
 
-        object Run1()
-        {
-            long answer = 0;
-            // var (w,h,g) = DigitGrid();
-            // var (w,h,g) = CharGrid();
-            // ProcessAllLines(new() { ... regex->action list ... });
-            var pairs = new List<(char a,char b)>();
-            var names = new HashSet<char>();
+            // index by 'A'+, each is string of parents
             foreach (var line in ReadLines())
             {
                 // Step F must be finished before step E can begin.
                 var w = line.Split(' ');
-                var (a, b) = (w[1], w[7]);
-                Trace.Assert(a.Length == 1 && b.Length == 1);
-                pairs.Add((a[0], b[0]));
-                Console.WriteLine($"{a}->{b} {pairs.Last()}");
-                names.Add(a[0]);
-                names.Add(b[0]);
+                var (src, dst) = (w[1][0], w[7][0]); // src->dst, save parents
+                Ensure(src);
+                Ensure(dst);
+                if (!parents[dst].Contains(src))
+                    parents[dst] += src;
+                // Console.WriteLine($"{a}->{b} {pairs.Last()}");
             }
 
-            var letters = names.ToList();
-            //letters.Sort();
-            //letters.Reverse();
-
-
-            // CABDFE
-            //letters = "CABDFE".ToList();
-
-            // fail ABCDGEFIMQJHKSLXNOPRUVZTWY
-            //      ABCDGEFIMQJHKSLXNOPRUVZTWY
-            // fail ABDWEFGRYHVIKMJLNOPQSTUCZX
-            //      ABCDGEFIMQJHKSLXNOPRUVZTWY
-            /*
-            var n = letters.Count;
-            bool done = false;
-            while (!done)
+            void Ensure(char t)
             {
-                done = true;
-                for (int i = 0; i < n - 1; ++i)
-                for (int j = i + 1; j < n; ++j)
+                if (!parents.ContainsKey(t))
+                    parents.Add(t, "");
+            }
+
+            // CABDFE 
+            // part 1 GKRVWBESYAMZDPTIUCFXQJLHNO
+            // part2 1107 too high
+
+            int n = 1+4;   // or 2,5
+            int del = 60; // or 0,60
+            (int timeLeft, char token) [] workers = new(int,char)[n];
+            for (var i = 0; i < workers.Length; i++)
+                workers[i] = new(0,'#');
+
+            string finished = "";
+            string inFlight = "";
+            int time = 0;
+            while (true)
+            {
+                Console.Write($"{time} : ");
+
+
+                // remove a second from each
+                for (int i = 0; i < n; ++i)
                 {
-                    var a1 = letters[i];
-                    var b1 = letters[j];
-                    var reverse = pairs.Any(p => p.a == b1 && p.b == a1);
-                    if (reverse)
                     {
-                        letters[i] = b1;
-                        letters[j] = a1;
-                        done = false;
-                        Console.WriteLine($"swap {a1} {b1}");
-                    }
-                    else
-                    {
-                        var required = pairs.Any(p => p.a == a1 && p.b == b1);
-                        if (!required && b1 < a1)
+                        if (workers[i].timeLeft > 0)
                         {
-                            letters[i] = b1;
-                            letters[j] = a1;
-                            done = false;
-                            Console.WriteLine($"swap {a1} {b1}");
+                            workers[i].timeLeft--;
+                            if (workers[i].timeLeft == 0)
+                            {
+                                var t = workers[i].token.ToString();
+                                finished += t;
+                                inFlight = inFlight.Replace(t, "");
+                                Console.Write($"worker {i} finishes {t}, ");
+                            }
                         }
                     }
                 }
-            }
-            */
 
-            // CABDFE
-            //letters.Sort();
-            letters.Sort(
-                (x, y) =>
+                var workerFree = workers.Any(w => w.timeLeft == 0);
+                if (workerFree && finished.Length + inFlight.Length < parents.Count)
                 {
-                    if (x == y) return 0;
-                    foreach (var (fst, lst) in pairs)
+                    // get those with no parents left that do not appear in ans
+                    var free = "";
+                    var notInPlay = finished + inFlight; 
+                    foreach (var p in parents)
                     {
-                        if (fst == x && lst == y)
-                            return 1;
-                        if (fst == y && lst == x)
-                            return -1;
+                        if (!notInPlay.Contains(p.Key) && Used(p.Value, finished))
+                            free += p.Key;
                     }
 
-                    return -x.CompareTo(y);
+                    Console.Write($"Free {free}, ");
+
+                    // start all free workers
+                    for (int i = 0; i < n; ++i)
+                    {
+                        if (free == "") break;
+                        if (workers[i].timeLeft == 0)
+                        {
+                            var t = free[0]-'A'+1 + del; 
+                            workers[i] = (t, free[0]);
+                            inFlight += free[0];
+                            Console.Write($"worker {i} takes {free[0]}, ");
+                            free = free.Remove(0);
+                        }
+                    }
                 }
-            );
 
-            letters.Reverse();
 
-            return letters.Aggregate("", (a, b) => a + b);
+                Console.WriteLine($" inflight {inFlight}  done {finished}");
+
+                if (finished.Length == parents.Count) break;
+
+                time++;
+
+
+            }
+
+            bool Used(string parents, string free)
+            {
+                return parents.All(c => free.Contains(c));
+            }
+
+            return time;
         }
+
+        object Run1()
+        {
+            // for each letter, point to predecessors
+            Dictionary<char, string> parents = new();
+
+
+            // index by 'A'+, each is string of parents
+            foreach (var line in ReadLines())
+            {
+                // Step F must be finished before step E can begin.
+                var w = line.Split(' ');
+                var (src, dst) = (w[1][0], w[7][0]); // src->dst, save parents
+                Ensure(src);
+                Ensure(dst);
+                if (!parents[dst].Contains(src))
+                    parents[dst] += src;
+                // Console.WriteLine($"{a}->{b} {pairs.Last()}");
+            }
+
+            void Ensure(char t)
+            {
+                if (!parents.ContainsKey(t))
+                    parents.Add(t, "");
+            }
+
+            // CABDFE 
+            // part 1 GKRVWBESYAMZDPTIUCFXQJLHNO
+            string order = "";
+
+            while (true)
+            {
+                // get those with no parents left that do not appear in ans
+                var free = "";
+                foreach (var p in parents)
+                {
+                    if (!order.Contains(p.Key) && Used(p.Value, order))
+                        free += p.Key;
+                }
+
+               // Console.WriteLine($"Free {free}");
+
+                if (free.Length == 0) break;
+                order += free.Min(c => c);
+
+                
+            }
+
+            bool Used(string parents, string free)
+            {
+                return parents.All(c => free.Contains(c));
+            }
+
+                return order;
+
+        }
+
+
 
         public override object Run(bool part2)
         {

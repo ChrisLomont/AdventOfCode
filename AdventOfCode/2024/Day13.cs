@@ -1,41 +1,49 @@
 
 
+using System.ComponentModel.Design;
+
 namespace Lomont.AdventOfCode._2024
 {
+    /*
+    2024 Day 13 part 1: 29388 in 4482.5 us
+    2024 Day 13 part 2: 99548032866004 in 1232.3 us
+    */
     internal class Day13 : AdventOfCode
     {
-        object Run2()
-        {
-            long answer = 0;
-
-            foreach (var line in ReadLines())
-            {
-                var nums = Numbers64(line);
-            }
-
-            return answer;
-        }
         //public override string TestFileSuffix() => "-test1";
-        public override string TestFileSuffix() => "";
+            public override string TestFileSuffix() => "";
 
-        object Run1()
-        {
-            long answer = 0;
-            // var (w,h,g) = DigitGrid();
-            // var (w,h,g) = CharGrid();
-            // ProcessAllLines(new() { ... regex->action list ... });
-            foreach (var line in ReadLines())
+
+
+            public override object Run(bool part2)
             {
-                var nums = Numbers64(line);
-            }
+                var lines = ReadLines();
+                long ext = part2 ? 10000000000000 : 0;
+                long tokens = 0;
 
-            return answer;
-        }
+                for (int i = 0; i < lines.Count; i += 4)
+                {
+                    var l1 = Numbers64(lines[i + 0]);
+                    var l2 = Numbers64(lines[i + 1]);
+                    var l3 = Numbers64(lines[i + 2]);
+                    long ax = l1[0], ay = l1[1];
+                    long bx = l2[0], by = l2[1];
+                    long px = l3[0] + ext, py = l3[1] + ext;
 
-        public override object Run(bool part2)
-        {
-            throw new NotImplementedException("Year 2024, day 13 not implemented");
-            return part2 ? Run2() : Run1();
-        }
+                    //checked
+                    {
+                        // Cramer rule solve system of eqns
+                        var det = ax * by - ay * bx;
+                        var ad = px * by - py * bx;
+                        var bd = ax * py - ay * px;
+                        if ((ad % det) == 0 && (bd % det) == 0)
+                            tokens += (3 * ad + bd) / det;
+                    }
+                }
+
+                return tokens;
+            } 
+        
+
     }
 }
