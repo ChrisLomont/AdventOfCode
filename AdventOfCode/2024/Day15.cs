@@ -165,10 +165,9 @@ namespace Lomont.AdventOfCode._2024
                     }
                     else
                     {
-                        HashSet<(int x, int y)> moved = new();
-                        if (CanPush(xy,del,/*x, y, dx, dy, */false, moved))
+                        if (CanPush(xy,del,false))
                         {
-                            CanPush(xy,del,/*x, y, dx, dy, */true, moved);
+                            CanPush(xy,del,true);
                             Set(pos, '.');
                             pos = xy;
                             Set(pos, '@');
@@ -178,53 +177,53 @@ namespace Lomont.AdventOfCode._2024
             }
 
             // given sq with box piece bx,by, and move dx,dy, return true if can push it
-            bool CanPush(vec2 bxy, vec2 dir, /*int bx, int by, int dx, int dy, */bool doMove, HashSet<(int, int)> moved)
+            bool CanPush(vec2 bxy, vec2 dir, bool doMove)
             {
-                var (bx, by) = bxy;
-                var (dx, dy) = dir;
+                //var (bx, by) = bxy;
+                //var (dx, dy) = dir;
 
-                var (bx2, by2) = (bx, by);
-                var c = g[bx, by];
+                //var (bx2, by2) = (bx, by);
+                var c = Get(bxy);//g[bx, by];
                 if (c == '#') return false;
                 Trace.Assert("[]".Contains(c));
                 char c2 = c;
+                vec2 bxy2;
                 if (c == '[')
                 {
-                    bx2 = bx + 1;
+                    bxy2 = bxy + new vec2(1,0);
+                    //bx2 = bx + 1;
                     c2 = ']';
                 }
                 else
                 {
-                    bx2 = bx - 1;
+                    bxy2 = bxy + new vec2(-1, 0);
+                    //bx2 = bx - 1;
                     c2 = '[';
                 }
-                Trace.Assert(c2 == g[bx2, by2]);
 
-                var bxy2 = new vec2(bx2,by2);
-                var m1 = g[bx + dx, by + dy] == '.' || CanPush(/*bx + dx, by + dy, dx, dy, */bxy+dir,dir,doMove, moved);
-                var m2 = g[bx2 + dx, by2 + dy] == '.' || CanPush(/*bx2 + dx, by2 + dy, dx, dy,*/bxy2+dir,dir, doMove, moved);
+                Trace.Assert(c2 == Get(bxy2));//g[bx2, by2]));
+
+              //  var bxy2 = new vec2(bx2,by2);
+                var m1 = Get(bxy+dir)/* g[bx + dx, by + dy]*/ == '.' || CanPush(bxy+dir,dir,doMove);
+                var m2 = Get(bxy2+dir)/* g[bx2 + dx, by2 + dy] */== '.' || CanPush(bxy2+dir,dir, doMove);
 
 
                 if (doMove)
                 {
                     // after moving children, move bx, bx2 from by to by + dy
-                    var p1 = (bx, by);
-                    var p2 = (bx2, by2);
-                    if (!moved.Contains(p1) && !moved.Contains(p2))
-                    {
-                        moved.Add(p1);
-                        moved.Add(p2);
+                    Set(bxy+dir,Get(bxy));
+                    Set(bxy2 + dir, Get(bxy2));
+                    Set(bxy, '.');
+                    Set(bxy2,'.');
 
-                        g[bx + dx, by + dy] = g[bx, by];
-                        g[bx2 + dx, by2 + dy] = g[bx2, by2];
-                        g[bx, by] = '.';
-                        g[bx2, by2] = '.';
-
-                    }
+                    //g[bx + dx, by + dy] = g[bx, by];
+                    //g[bx2 + dx, by2 + dy] = g[bx2, by2];
+                        //g[bx, by] = '.';
+                        //g[bx2, by2] = '.';
 
                 }
 
-                return (m1 && m2);
+                return m1 && m2;
             }
 
         }
