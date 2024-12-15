@@ -165,9 +165,10 @@ namespace Lomont.AdventOfCode._2024
                     }
                     else
                     {
-                        if (CanPush(xy,del,false))
+                        List<vec2> moves = new();
+                        if (CanPush(xy,del,false, moves))
                         {
-                            CanPush(xy,del,true);
+                            CanPush(xy,del,true, moves);
                             Set(pos, '.');
                             pos = xy;
                             Set(pos, '@');
@@ -177,13 +178,9 @@ namespace Lomont.AdventOfCode._2024
             }
 
             // given sq with box piece bx,by, and move dx,dy, return true if can push it
-            bool CanPush(vec2 bxy, vec2 dir, bool doMove)
+            bool CanPush(vec2 bxy, vec2 dir, bool doMove, List<vec2> moves)
             {
-                //var (bx, by) = bxy;
-                //var (dx, dy) = dir;
-
-                //var (bx2, by2) = (bx, by);
-                var c = Get(bxy);//g[bx, by];
+                var c = Get(bxy);
                 if (c == '#') return false;
                 Trace.Assert("[]".Contains(c));
                 char c2 = c;
@@ -191,36 +188,28 @@ namespace Lomont.AdventOfCode._2024
                 if (c == '[')
                 {
                     bxy2 = bxy + new vec2(1,0);
-                    //bx2 = bx + 1;
                     c2 = ']';
                 }
                 else
                 {
                     bxy2 = bxy + new vec2(-1, 0);
-                    //bx2 = bx - 1;
                     c2 = '[';
                 }
 
-                Trace.Assert(c2 == Get(bxy2));//g[bx2, by2]));
+                Trace.Assert(c2 == Get(bxy2));
 
-              //  var bxy2 = new vec2(bx2,by2);
-                var m1 = Get(bxy+dir)/* g[bx + dx, by + dy]*/ == '.' || CanPush(bxy+dir,dir,doMove);
-                var m2 = Get(bxy2+dir)/* g[bx2 + dx, by2 + dy] */== '.' || CanPush(bxy2+dir,dir, doMove);
+                var m1 = Get(bxy+dir) == '.' || CanPush(bxy+dir,dir,doMove, moves);
+                var m2 = Get(bxy2+dir) == '.' || CanPush(bxy2+dir,dir, doMove, moves);
 
-
+                moves.Add(bxy);
+                moves.Add(bxy2);
                 if (doMove)
                 {
                     // after moving children, move bx, bx2 from by to by + dy
-                    Set(bxy+dir,Get(bxy));
+                    Set(bxy + dir, Get(bxy));
                     Set(bxy2 + dir, Get(bxy2));
                     Set(bxy, '.');
-                    Set(bxy2,'.');
-
-                    //g[bx + dx, by + dy] = g[bx, by];
-                    //g[bx2 + dx, by2 + dy] = g[bx2, by2];
-                        //g[bx, by] = '.';
-                        //g[bx2, by2] = '.';
-
+                    Set(bxy2, '.');
                 }
 
                 return m1 && m2;
