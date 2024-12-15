@@ -51,17 +51,12 @@ namespace Lomont.AdventOfCode._2024
                 c = gl[j][i];
                 if (c == '@')
                     pos = new vec2(i,j);
-                //{
-                //    sx = i;
-                //    sy = j;
-                //}
                 return c;
             });
 
             // moves
             foreach (var m in seq)
             {
-                //       Console.WriteLine(m);
                 switch (m)
                 {
                     case 'v':
@@ -105,48 +100,31 @@ namespace Lomont.AdventOfCode._2024
             {
                 // Dump(g,noComma:true);
                 //  Console.WriteLine();
-                //int x = sx + dx, y = sy + dy;
                 var xy = pos + dir;
-                var ch = Get(xy);//g[x, y]);
+                var ch = Get(xy);
                 if (ch == '#') return;
                 if (ch == '.')
                 {
                     Set(pos,'.');
-                    //g[sx, sy] = '.';
                     pos = xy;
-                    //sx = x;
-                    //sy = y;
                     Set(pos,'@');
-                    //g[sx, sy] = '@';
                 }
 
                 if (ch == 'O')
                 {
                     // try push
-                    //int tx = x, ty = y;
                     var txy = xy;
-                    while (Get(txy)/*g[tx, ty]*/ == 'O')
-                    {
+                    while (Get(txy) == 'O')
                         txy += dir;
-                        //tx += dx;
-                        //ty += dy;
-                    }
 
-                    if (Get(txy)/*g[tx, ty]*/ != '#')
+                    if (Get(txy) != '#')
                     {
                         Set(txy,'O');
-
-                        //g[tx, ty] = 'O';
-                        //g[x, y] = '.';
                         Set(xy, '.');
 
-                        //g[sx, sy] = '.';
                         Set(pos, '.');
-                        //sx = x;
-                        //sy = y;
                         pos = xy;
                         Set(pos,'@');
-                        //g[sx, sy] = '@';
                     }
                 }
             }
@@ -155,25 +133,14 @@ namespace Lomont.AdventOfCode._2024
             {
                 //      Dump(g,noComma:true);
                 ////      Console.WriteLine();
-             //   int x = sx + dx, y = sy + dy;
              var xy = pos + del;
-             var ch = Get(xy);//g[x, y]);
+             var ch = Get(xy);
                 if (ch == '#') return;
                 if (ch == '.')
                 {
-                  //  g[sx, sy] = '.';
-                  //  sx = x;
-                  //  sy = y;
-                  //  g[sx, sy] = '@';
-
                     Set(pos, '.');
-                    //g[sx, sy] = '.';
                     pos = xy;
-                    //sx = x;
-                    //sy = y;
                     Set(pos, '@');
-                    //g[sx, sy] = '@';
-
                 }
 
                 if (ch == '[' || ch == ']')
@@ -182,34 +149,42 @@ namespace Lomont.AdventOfCode._2024
                     var (dx, dy) = del;
 
                     // try push
-                    int tx = x, ty = y;
-                    int ax = x, ay = y; // start x,y tile
+                    //int tx = x, ty = y;
+                    //int ax = x, ay = y; // start x,y tile
+                    var txy = new vec2(xy.x,xy.y);
                     if (dx != 0)
                     {
-                        while ("[]".Contains(g[tx, ty]))
+                        while ("[]".Contains(Get(txy)/*g[tx, ty]*/))
                         {
-                            tx += dx;
-                            ty += dy;
+                            txy += del;
+                            //tx += dx;
+                            //ty += dy;
                         }
 
-                        if (g[tx, ty] != '#')
+                        if (Get(txy/*g[tx, ty]*/) != '#')
                         {
                             // shift
-                            while (tx != ax || ty != ay)
+                            while (txy != xy/*tx != ax || ty != ay*/)
                             {
-                                g[tx, ty] = g[tx - dx, ty - dy];
-                                tx -= dx;
-                                ty -= dy;
+                                Set(txy,Get(txy-del));
+                                //g[tx, ty] = g[tx - dx, ty - dy];
+                                //tx -= dx;
+                                //ty -= dy;
+                                txy -= del;
                             }
                             // last one
-                            g[x, y] = '.';
+                            Set(xy,'.');
+                            //g[x, y] = '.';
 
-                            var (sx, sy) = pos;
-                            g[sx, sy] = '.';
-                            sx = x;
-                            sy = y;
-                            g[sx, sy] = '@';
-                            pos = new vec2(sx,sy);
+                            //var (sx, sy) = pos;
+                            //g[sx, sy] = '.';
+                            Set(pos, '.');
+                            pos = xy;
+                            //sx = x;
+                            //sy = y;
+                            //g[sx, sy] = '@';
+                            Set(pos, '@');
+                            pos = xy;//new vec2(sx,sy);
                         }
                     }
                     else
@@ -226,8 +201,6 @@ namespace Lomont.AdventOfCode._2024
                             sy = y;
                             g[sx, sy] = '@';
                             pos = new vec2(sx, sy);
-
-
                         }
                     }
                 }
