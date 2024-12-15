@@ -8,6 +8,8 @@ namespace Lomont.AdventOfCode.Utils
 {
     public static class NumberTheory
     {
+        public static long PositiveMod(long a, long b) => ((a%b)+b)%b;
+
         public static long GCD(long a, long b)
         {
             while (b != 0)

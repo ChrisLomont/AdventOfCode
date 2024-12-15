@@ -1,80 +1,55 @@
 
 
+using System.ComponentModel.DataAnnotations;
+using Lomont.GIFLib;
+
 namespace Lomont.AdventOfCode._2024
 {
     internal class Day14 : AdventOfCode
     {
+
+        /*
+         * 2024 Day 14 part 1: 226548000 in 4964 us
+2024 Day 14 part 2: 7753 in 261733.6 us
+         */
+
         object Run2()
         {
-            long answer = 0;
+            var (w, h) = (101, 103); // room size
 
-            long w = 11, h = 7; // room size
-            w = 101; h = 103;
-           
-            List<(long px, long py, long vx, long vy)> rob = new();
+            List<(long px, long py, long vx, long vy)> robots = new();
 
             foreach (var line in ReadLines())
             {
                 var nums = Numbers64(line);
                 long px = nums[0], py = nums[1], vx = nums[2], vy = nums[3];
-                rob.Add(new(px,py,vx,vy));
-
-              
+                robots.Add(new(px,py,vx,vy));
             }
 
-            long maxx = 0, maxy=0;
-            long maxHas = 0, maxHasTime = 0;
+            // look for rows, columns with abnormal density
+            long maxTime=0, maxVal = 0;
+
+            // is w*h enough time?
             for (long s = 0; s < w * h; ++s)
             {
-
-                char[,] g = new char[w, h];
-                Apply(g, c => '.');
                 long[] cx = new long[w];
                 long[] cy = new long[h];
-                foreach (var (px,py,vx,vy) in rob)
+                foreach (var (px,py,vx,vy) in robots)
                 {
-                    var fx = PosMod(px+vx*s,w);
-                    var fy = PosMod(py + vy * s, h);
-                    g[fx, fy] = '*';
+                    var fx = NumberTheory.PositiveMod(px+vx*s,w);
+                    var fy = NumberTheory.PositiveMod(py + vy * s, h);
                     cx[fx]++;
                     cy[fy]++;
                 }
-
-                bool hasx = false, hasy = false;
-                // look for lines
-                var mx = cx.Max();
-                if (mx >= maxx)
+                var val = cx.Max()+cy.Max();
+                if (val > maxVal)
                 {
-                    maxx = mx;
-                  //  Dump(g,noComma:true);
-//                    Console.WriteLine($"X {s} {mx}");
-
-                    hasx = true;
+                    maxVal = val;
+                    maxTime = s;
                 }
-                var my = cy.Max();
-                if (my >= maxy)
-                {
-                    maxy = my;
-                  //  Dump(g, noComma: true);
-                  //  Console.WriteLine($"Y {s} {my}");
-                    hasy = true;
-
-                }
-
-                if (hasx && hasy)
-                {
-                  //  Console.WriteLine($"Both {s}");
-                   //  Dump(g, noComma: true);
-                     if (maxx + maxy > maxHas)
-                     {
-                         maxHas = maxy + maxx;
-                         maxHasTime = s;
-                     }
-                }
-
             }
 
-            return maxHasTime;
+            return maxTime;
 
 
         }
@@ -83,63 +58,29 @@ namespace Lomont.AdventOfCode._2024
 
         object Run1()
         {
-            long answer = 0;
-
-            long w = 11, h = 7; // room size
-            w = 101; h = 103;
+            var (w,h)=(101,103); // room size
             long s = 100; // time
-            long[,] g = new long[w, h];
+
+            long cx = w / 2, cy = h / 2; // center
+            long[,] q = new long[2, 2];  // quarters
 
             foreach (var line in ReadLines())
             {
                 var nums = Numbers64(line);
                 long px = nums[0], py = nums[1], vx = nums[2], vy = nums[3];
 
-                long fx = PosMod( px + vx * s, w);
-                long fy = PosMod(py + vy * s,h);
-                g[fx, fy]++;
+                var fx = NumberTheory.PositiveMod( px + vx * s, w);
+                var fy = NumberTheory.PositiveMod(py + vy * s,h);
 
+                if (fx == cx || fy == cy) continue;
+
+                q[fx/(cx+1),fy/(cy+1)]++;
             }
-
-            long cx = w/2,cy= h/2;  
-            long q1 = 0, q2 = 0, q3 = 0, q4 = 0;
-            Apply(g, (i, j, v) =>
-            {
-                if (i < cx && j < cy)
-                {
-                    q1+=v;
-                }
-                if (i <cx && j > cy)
-                {
-                    q2 += v;
-                }
-                if (i > cx && j > cy)
-                {
-                    q3 += v;
-                }
-                if (i > cx && j <cy)
-                {
-                    q4 += v;
-                }
-
-                return v;
-            });
-
-         ////   Dump(g,noComma:true);
-
-         //   Console.WriteLine($"{q1} {q2} {q3} {q4}");
-
-            return q1*q2*q3*q4;
-        }
-
-        long PosMod(long a, long b)
-        {
-            return ((a % b) + b) % b;
+            return q[0, 0] * q[1, 0] * q[0, 1] * q[1, 1];
         }
 
         public override object Run(bool part2)
         {
-           
             return part2 ? Run2() : Run1();
         }
     }
