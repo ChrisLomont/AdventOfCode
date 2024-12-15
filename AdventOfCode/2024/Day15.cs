@@ -87,11 +87,6 @@ namespace Lomont.AdventOfCode._2024
                 if (ch == '#') return;
                 if (ch == '.')
                     Upd(xy);
-                //{
-                //    Set(pos,'.');
-                //    pos = xy;
-                //    Set(pos,'@');
-                //}
 
                 if (boxs.Contains(ch))
                 {
@@ -105,9 +100,6 @@ namespace Lomont.AdventOfCode._2024
                         Set(txy,'O');
                         Set(xy, '.');
                         Upd(xy);
-                        //Set(pos, '.');
-                        //pos = xy;
-                        //Set(pos,'@');
                     }
                 }
             }
@@ -120,18 +112,10 @@ namespace Lomont.AdventOfCode._2024
                 var ch = Get(xy);
                 if (ch == '#') return;
                 if (ch == '.')
-                {
                     Upd(xy);
-                    //Set(pos, '.');
-                    //pos = xy;
-                    //Set(pos, '@');
-                }
 
                 if (ch == '[' || ch == ']')
                 {
-//                    var (x, y) = xy;
-//                    var (dx, dy) = dir;
-
                     // try push
                     var txy = new vec2(xy.x, xy.y);
                     if (dir.x != 0)
@@ -151,9 +135,6 @@ namespace Lomont.AdventOfCode._2024
                             // last one
                             Set(xy, '.');
                             Upd(xy);
-                            //Set(pos, '.');
-                            //pos = xy;
-                            //Set(pos, '@');
                         }
                     }
                     else
@@ -162,9 +143,6 @@ namespace Lomont.AdventOfCode._2024
                         {
                             CanPush(xy, dir, true);
                             Upd(xy);
-                            //Set(pos, '.');
-                            //pos = xy;
-                            //Set(pos, '@');
                         }
                     }
                 }
