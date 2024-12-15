@@ -26,17 +26,17 @@ namespace Lomont.AdventOfCode._2024
                 if (line.Length == 0)
                     phase++;
 
-
                 if (phase == 0)
                 {
                     var line2 = line;
                     if (part2)
                     {
-                        line2=line2.Replace("#", "##")
+                        line2 = line2.Replace("#", "##")
                             .Replace("O", "[]")
                             .Replace(".", "..")
                             .Replace("@", "@.");
                     }
+
                     gl.Add(line2);
                 }
                 else if (phase == 1)
@@ -48,44 +48,35 @@ namespace Lomont.AdventOfCode._2024
             var w = gl[0].Length;
             var g = new char[w, h];
             var pos = new vec2();
-            Apply(g, (i, j, c) =>
-            {
+            Apply(g, (i, j, c) => {
                 c = gl[j][i];
                 if (c == '@')
                     pos = new vec2(i,j);
-                return c;
-            });
+                return c; });
 
             // moves
-            Dictionary<char, vec2> dirs = new Dictionary<char, vec2> {
-                ['^'] = new vec2(0, -1),
-                ['>'] = new vec2(+1, 0),
-                ['v'] = new vec2(0, +1),
-                ['<'] = new vec2(-1, 0), };
-            foreach (var m in seq)
-                Move(dirs[m]);
+            Dictionary<char, vec2> dirs = new (){ ['^'] = new vec2(0, -1), ['>'] = new vec2(+1, 0), ['v'] = new vec2(0, +1), ['<'] = new vec2(-1, 0) };
+            foreach (var dir in seq.Select(m => dirs[m]))
+                if (part2) Move2(dir);
+                else Move1(dir);
 
             // scoring
             int answer = 0;
-            Apply(g, (i, j, c) =>
-            {
+            Apply(g, (i, j, c) => {
                 if (c == boxs[0])
-                {
                     answer += 100 * j + i;
-                }
-                return c;
-            });
+                return c; });
             return answer;
-
-            //Dump(g,noComma:true);
-            void Move(vec2 dir)
-            {
-                if (part2) Move2(dir);
-                else Move1(dir);
-            }
 
             char Get(vec2 v) => g[v.x,v.y];
             void Set(vec2 v, char c) => g[v.x,v.y] = c;
+
+            void Upd(vec2 xy)
+            {
+                Set(pos, '.');
+                pos = xy;
+                Set(pos, '@');
+            }
 
             void Move1(vec2 dir)
             {
@@ -95,11 +86,12 @@ namespace Lomont.AdventOfCode._2024
                 var ch = Get(xy);
                 if (ch == '#') return;
                 if (ch == '.')
-                {
-                    Set(pos,'.');
-                    pos = xy;
-                    Set(pos,'@');
-                }
+                    Upd(xy);
+                //{
+                //    Set(pos,'.');
+                //    pos = xy;
+                //    Set(pos,'@');
+                //}
 
                 if (boxs.Contains(ch))
                 {
@@ -112,80 +104,81 @@ namespace Lomont.AdventOfCode._2024
                     {
                         Set(txy,'O');
                         Set(xy, '.');
-
-                        Set(pos, '.');
-                        pos = xy;
-                        Set(pos,'@');
+                        Upd(xy);
+                        //Set(pos, '.');
+                        //pos = xy;
+                        //Set(pos,'@');
                     }
                 }
             }
 
-            void Move2(vec2 del)
+            void Move2(vec2 dir)
             {
                 //      Dump(g,noComma:true);
                 ////      Console.WriteLine();
-                var xy = pos + del;
+                var xy = pos + dir;
                 var ch = Get(xy);
                 if (ch == '#') return;
                 if (ch == '.')
                 {
-                    Set(pos, '.');
-                    pos = xy;
-                    Set(pos, '@');
+                    Upd(xy);
+                    //Set(pos, '.');
+                    //pos = xy;
+                    //Set(pos, '@');
                 }
 
                 if (ch == '[' || ch == ']')
                 {
-                    var (x, y) = xy;
-                    var (dx, dy) = del;
+//                    var (x, y) = xy;
+//                    var (dx, dy) = dir;
 
                     // try push
                     var txy = new vec2(xy.x, xy.y);
-                    if (dx != 0)
+                    if (dir.x != 0)
                     {
                         while ("[]".Contains(Get(txy)))
-                            txy += del;
+                            txy += dir;
 
                         if (Get(txy) != '#')
                         {
                             // shift
                             while (txy != xy)
                             {
-                                Set(txy, Get(txy - del));
-                                txy -= del;
+                                Set(txy, Get(txy - dir));
+                                txy -= dir;
                             }
 
                             // last one
                             Set(xy, '.');
-
-                            Set(pos, '.');
-                            pos = xy;
-                            Set(pos, '@');
+                            Upd(xy);
+                            //Set(pos, '.');
+                            //pos = xy;
+                            //Set(pos, '@');
                         }
                     }
                     else
                     {
-                        List<vec2> moves = new();
-                        if (CanPush(xy,del,false, moves))
+                        if (CanPush(xy, dir, false))
                         {
-                            CanPush(xy,del,true, moves);
-                            Set(pos, '.');
-                            pos = xy;
-                            Set(pos, '@');
+                            CanPush(xy, dir, true);
+                            Upd(xy);
+                            //Set(pos, '.');
+                            //pos = xy;
+                            //Set(pos, '@');
                         }
                     }
                 }
             }
 
-            // given sq with box piece bx,by, and move dx,dy, return true if can push it
-            bool CanPush(vec2 bxy, vec2 dir, bool doMove, List<vec2> moves)
+            // given sq with box piece bxy, and move dir, return true if can push it
+            bool CanPush(vec2 bxy, vec2 dir, bool doMove)
             {
-                var c = Get(bxy);
-                if (c == '#') return false;
-                Trace.Assert("[]".Contains(c));
-                char c2 = c;
+                var c1 = Get(bxy);
+                if (c1 == '#') return false;
+                Trace.Assert("[]".Contains(c1));
+                char c2 = c1;
                 vec2 bxy2;
-                if (c == '[')
+                if (c1 == '[')
                 {
                     bxy2 = bxy + new vec2(1,0);
                     c2 = ']';
@@ -198,14 +191,13 @@ namespace Lomont.AdventOfCode._2024
 
                 Trace.Assert(c2 == Get(bxy2));
 
-                var m1 = Get(bxy+dir) == '.' || CanPush(bxy+dir,dir,doMove, moves);
-                var m2 = Get(bxy2+dir) == '.' || CanPush(bxy2+dir,dir, doMove, moves);
+                var m1 = Get(bxy+dir) == '.' || CanPush(bxy+dir,dir,doMove);
+                var m2 = Get(bxy2+dir) == '.' || CanPush(bxy2+dir,dir, doMove);
 
-                moves.Add(bxy);
-                moves.Add(bxy2);
+                //doMove = m1 && m2;
                 if (doMove)
                 {
-                    // after moving children, move bx, bx2 from by to by + dy
+                    // after moving children, move this
                     Set(bxy + dir, Get(bxy));
                     Set(bxy2 + dir, Get(bxy2));
                     Set(bxy, '.');
