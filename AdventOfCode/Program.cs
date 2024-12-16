@@ -26,8 +26,8 @@ using Lomont.AdventOfCode;
 // then don't have to change this every time (only if change crashes?)
 
 
-//RunDays(7,7,2018);
-RunDays(15,15);
+//RunDays(9,9,2018);
+RunDays(16, 16);
 
 
 void RunDays(int start = 0, int end = -1, int yearStart = -1, int yearEnd = -1)

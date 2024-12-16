@@ -32,7 +32,6 @@ namespace Lomont.AdventOfCode._2018
 
         public override object Run(bool part2)
         {
-            throw new NotImplementedException("Year 2018, day 09 not implemented");
             return part2 ? Run2() : Run1();
         }
     }
