@@ -1,8 +1,3 @@
-
-
-using System.ComponentModel.DataAnnotations;
-using Lomont.GIFLib;
-
 namespace Lomont.AdventOfCode._2024
 {
     internal class Day14 : AdventOfCode

@@ -1,8 +1,3 @@
-
-using System.IO.MemoryMappedFiles;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.JavaScript;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day05 : AdventOfCode

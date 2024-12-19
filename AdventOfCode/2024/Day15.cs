@@ -1,7 +1,5 @@
 
 
-using System.Runtime.Serialization;
-
 namespace Lomont.AdventOfCode._2024
 {
     internal class Day15 : AdventOfCode

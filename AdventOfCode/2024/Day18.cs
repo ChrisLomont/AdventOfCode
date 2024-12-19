@@ -1,7 +1,5 @@
 
 
-using System.Data.SqlTypes;
-
 namespace Lomont.AdventOfCode._2024
 {
     internal class Day18 : AdventOfCode

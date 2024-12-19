@@ -1,6 +1,3 @@
-using System.Globalization;
-using System.Security.Cryptography.X509Certificates;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day02 : AdventOfCode

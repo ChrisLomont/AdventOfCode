@@ -1,8 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Headers;
-using static Lomont.AdventOfCode.AdventOfCode;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day10 : AdventOfCode

@@ -1,7 +1,5 @@
 
 
-using System.ComponentModel;
-
 namespace Lomont.AdventOfCode._2018
 {
     internal class Day08 : AdventOfCode

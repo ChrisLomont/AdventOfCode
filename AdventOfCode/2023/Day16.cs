@@ -1,5 +1,3 @@
-using System.Data;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day16 : AdventOfCode

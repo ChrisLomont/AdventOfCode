@@ -1,7 +1,4 @@
 ﻿
-using System.Diagnostics.Contracts;
-using System.Numerics;
-using System.Runtime.InteropServices;
 
 // todo - polish off, put in here
 namespace Lomont.AdventOfCode.Utils

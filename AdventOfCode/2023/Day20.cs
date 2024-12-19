@@ -1,5 +1,3 @@
-using System.Runtime.Serialization.Json;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day20 : AdventOfCode

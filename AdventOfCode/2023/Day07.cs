@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day07 : AdventOfCode

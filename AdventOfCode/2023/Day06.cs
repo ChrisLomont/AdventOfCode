@@ -1,6 +1,3 @@
-using System;
-using System.Runtime.InteropServices.ComTypes;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day06 : AdventOfCode

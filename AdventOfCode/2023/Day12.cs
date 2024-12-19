@@ -1,6 +1,3 @@
-using System.Net;
-using System.Numerics;
-
 namespace Lomont.AdventOfCode._2023
 {
 

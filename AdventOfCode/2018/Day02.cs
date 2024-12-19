@@ -1,7 +1,5 @@
 
 
-using System.Runtime.Intrinsics.Arm;
-
 namespace Lomont.AdventOfCode._2018
 {
     internal class Day02 : AdventOfCode

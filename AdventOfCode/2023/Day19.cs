@@ -1,5 +1,3 @@
-using System.Net.Http.Headers;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day19 : AdventOfCode

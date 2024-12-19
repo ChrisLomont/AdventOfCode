@@ -1,7 +1,5 @@
 
 
-using System.Numerics;
-
 namespace Lomont.AdventOfCode._2024
 {
     internal class Day01 : AdventOfCode

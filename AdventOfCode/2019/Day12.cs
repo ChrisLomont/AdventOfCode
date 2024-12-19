@@ -1,6 +1,3 @@
-using System.Runtime;
-using System.Security.Cryptography;
-
 namespace Lomont.AdventOfCode._2019
 {
     //2019 Day 12 part 1: 6849 in 14047.2 us

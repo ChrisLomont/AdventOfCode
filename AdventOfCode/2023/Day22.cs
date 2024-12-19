@@ -1,8 +1,3 @@
-using Lomont.GIFLib;
-using System.Globalization;
-using System.Numerics;
-using System.Runtime.Intrinsics;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day22 : AdventOfCode

@@ -1,9 +1,3 @@
-
-
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Security.Cryptography;
-
 namespace Lomont.AdventOfCode._2018
 {
     internal class Day07 : AdventOfCode

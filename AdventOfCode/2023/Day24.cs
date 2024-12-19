@@ -1,6 +1,3 @@
-using System.Data.SqlTypes;
-using System.Security.AccessControl;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day24 : AdventOfCode

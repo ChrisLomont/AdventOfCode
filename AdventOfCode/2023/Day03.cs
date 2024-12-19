@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day03 : AdventOfCode

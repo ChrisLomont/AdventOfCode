@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices.JavaScript;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day14 : AdventOfCode

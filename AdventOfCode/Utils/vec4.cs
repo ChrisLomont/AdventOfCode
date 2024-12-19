@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualBasic.CompilerServices;
-
-namespace Lomont.AdventOfCode.Utils
+﻿namespace Lomont.AdventOfCode.Utils
 {
     public class vec4 : IEquatable<vec4>
     {

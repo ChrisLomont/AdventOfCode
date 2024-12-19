@@ -1,7 +1,5 @@
 
 
-using System.Collections.Generic;
-
 namespace Lomont.AdventOfCode._2018
 {
     internal class Day06 : AdventOfCode

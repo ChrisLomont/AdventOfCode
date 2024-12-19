@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day23 : AdventOfCode

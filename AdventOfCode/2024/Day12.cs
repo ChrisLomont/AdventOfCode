@@ -1,8 +1,3 @@
-
-
-using System.Formats.Asn1;
-using System.Runtime.InteropServices.JavaScript;
-
 namespace Lomont.AdventOfCode._2024
 {
     internal class Day12 : AdventOfCode

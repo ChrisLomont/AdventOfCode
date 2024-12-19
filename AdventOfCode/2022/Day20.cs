@@ -1,8 +1,4 @@
-﻿
-using System.Runtime.ConstrainedExecution;
-using System.Threading.Tasks.Sources;
-
-namespace Lomont.AdventOfCode._2022
+﻿namespace Lomont.AdventOfCode._2022
 {
     internal class Day20 : AdventOfCode
     {

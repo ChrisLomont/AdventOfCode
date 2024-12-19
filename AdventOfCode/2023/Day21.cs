@@ -1,7 +1,3 @@
-
-using System.Data;
-using System.Runtime.CompilerServices;
-
 namespace Lomont.AdventOfCode._2023
 {
     internal class Day21 : AdventOfCode
