@@ -26,23 +26,20 @@ namespace Lomont.AdventOfCode._2024
                 if (c == 'E') e = (i, j); }
             g[s.x, s.y] = '.';
             g[e.x, e.y] = '.';
-            var (se, es) = (DistMap(s), DistMap(e));
-            var cost = se[e.x, e.y];
+            var es = DistMap(e);
+            var cost = es[s.x, s.y];
             int[] counts = new int[cost + 1];
             var (maxSteps, minSavings) = part2 ? (20, 100) : (2, 100);
             //(maxSteps, minSavings) = (2, 2); // test
             foreach (var (i,j,c) in Walk(g)) {
                 if (c != '.') continue; // todo - can only check things on optimal path, faster?
                 (int x, int y) a = (i, j);
-                var costA = se[i, j];
                 // walk manhattan dist
                 for (var di = -maxSteps; di <= maxSteps; ++di)
                 for (var dj = Math.Abs(di)-maxSteps; dj <= maxSteps-Math.Abs(di); ++dj) {
                     (int x, int y) b = (a.x + di, a.y + dj);
                     if (InBounds(b) && g[b.x, b.y] == '.') {
-                        var costB = es[b.x, b.y];
-                        var cheatCost = costA + costB + Math.Abs(di) + Math.Abs(dj);
-                        var savings = cost - cheatCost;
+                        var savings =   es[i, j] - es[b.x, b.y] - Math.Abs(di) - Math.Abs(dj);
                         if (savings >= minSavings)
                             counts[savings]++; } } }
             //for (int i = 0; i < counts.Length; ++i) 
