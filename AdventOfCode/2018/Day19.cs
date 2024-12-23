@@ -4,7 +4,7 @@ namespace Lomont.AdventOfCode._2018
 {
     internal class Day19 : AdventOfCode
     {
-        class Cpu
+        public class Cpu
         {
             public int[] regs = new int[6];
             public int ip => regs[ipReg];
