@@ -1,4 +1,7 @@
 
+using System;
+using System.Xml.Linq;
+
 namespace Lomont.AdventOfCode._2024
 
 {
@@ -80,12 +83,7 @@ namespace Lomont.AdventOfCode._2024
         }
 
 
-        enum Op
-        {
-            AND,
-            OR,
-            XOR
-        }
+        enum Op { AND, OR, XOR }
 
         record Gate(string in1, Op op, string in2, string output, int index);
 
@@ -125,25 +123,31 @@ namespace Lomont.AdventOfCode._2024
             //   - swap them in pairs and check again
 
 
-            if (!CheckHalfAdder())
+            var err0 = CheckHalfAdder("x00", "y00", out var sum, out var carry);
+            if (err0 !="" || sum != "z00")
             {
                 if (dump)
-                    Console.WriteLine("Error in x0,y0,z0");
+                    Console.WriteLine($"Error in bit 0 : {err0}");
                 // todo - handle this fix, leverage the debug code
                 return "ERROR";
             }
+            carries.Add(carry);
 
             // check full adders
             int bitIndex = 1;
             var bitMax = gates.Where(g => g.output.StartsWith("z")).Count();
             while (bitIndex < bitMax)
             {
-                var err = CheckAdder(bitIndex);
-                if (err != "")
+                var xName = bitIndex < 10 ? $"x0{bitIndex}" : $"x{bitIndex}";
+                var yName = bitIndex < 10 ? $"y0{bitIndex}" : $"y{bitIndex}";
+                    var zName = bitIndex < 10 ? $"z0{bitIndex}" : $"z{bitIndex}";
+
+                var err = CheckFullAdder(bitIndex, xName, yName, out sum, out carry);
+                if (err != "" || sum != zName)
                 {
                     if (dump)
                         Console.WriteLine($"Error index {bitIndex}: {err}");
-                    if (!Debug(bitIndex, dump))
+                    if (!Debug(bitIndex, dump, xName, yName, zName))
                         return "FAILED";
                     if (swapNames.Count == 8)
                     {
@@ -151,30 +155,32 @@ namespace Lomont.AdventOfCode._2024
                         var ans = swapNames.Aggregate("", (a, b) => a + "," + b);
                         return ans[1..];
                     }
+
+                    // fixed names
+                    CheckFullAdder(bitIndex, xName, yName, out sum, out carry);
                 }
+
+                carries.Add(carry);
 
                 bitIndex++;
             }
-
-
             return "END";
         }
 
 
-        bool Debug(int bitIndex, bool dump)
+        bool Debug(int bitIndex, bool dump, string xName, string yName, string zName)
         {
             debug.Clear();
             isDebug = true;
-            CheckAdder(bitIndex);
+            // gather registers
+            CheckFullAdder(bitIndex, xName, yName, out var ss, out var cc);
             isDebug = false;
 
-            debug.DistinctBy(g => g.index);
             debug = debug.OrderBy(g => g.index).ToList();
 
-            foreach (var g in debug)
+            if (dump)
             {
-                if (dump)
-
+                foreach (var g in debug)
                     Console.WriteLine($" - {g}");
             }
 
@@ -190,7 +196,7 @@ namespace Lomont.AdventOfCode._2024
             {
                 var (n1, n2) = (names[i], names[j]);
                 Swap(n1, n2);
-                if (CheckAdder(bitIndex) == "")
+                if (CheckFullAdder(bitIndex, xName, yName, out ss, out cc) == ""  &&  ss == zName)
                 {
                     if (dump)
                         Console.WriteLine($"Fixed {n1},{n2}");
@@ -222,7 +228,6 @@ namespace Lomont.AdventOfCode._2024
                 var g = gates[i];
                 if (g.output == src)
                     gates[i] = g with { output = dst };
-
             }
         }
 
@@ -244,151 +249,62 @@ namespace Lomont.AdventOfCode._2024
             return ans;
         }
 
-        bool CheckHalfAdder()
+        // return error message
+        string CheckHalfAdder(string inA, string inB, out string sum, out string carry)
         {
             /* half adder
-           z0 = x0^y0
-           c0 = x0&y0
-          */
-            var x0 = All("x00", true);
-            var y0 = All("y00", true);
-            var z0 = All("z00", false);
-            if (x0.Count != 2 || y0.Count != 2 || z0.Count != 1
-                || x0[0].index != y0[0].index
-                || x0[1].index != y0[1].index
+            sum = A^B
+            carry = A&B
+            */
+
+            sum = "";
+            carry = "";
+            var inputsA = All(inA, true);
+            var inputsB = All(inB, true);
+            if (   inputsA.Count != 2 
+                || inputsB.Count != 2
+                || inputsA[0].index != inputsB[0].index
+                || inputsA[1].index != inputsB[1].index
                )
+                return "mixed up inputs";
+
+            for (var i = 0; i < 2; ++i)
             {
-                Console.WriteLine("Error on x0,y0,z0");
-                return false;
+                var op = inputsA[i].op;
+                if (op == Op.AND)
+                    carry = inputsA[i].output;
+
+                if (op == Op.XOR)
+                    sum = inputsA[i].output;
             }
 
-            bool andOk = false, xorOk = false;
-            for (int i = 0; i < 2; ++i)
-            {
-                var op = x0[i].op;
-                if (op == Op.AND && x0[i].output != "z00")
-                {
-                    andOk = true;
-                    carries.Add(x0[i].output);
-                }
+            if (sum=="" || carry=="")
+                return "sum or carry bad";
 
-                if (op == Op.XOR && x0[i].output == "z00")
-                {
-                    xorOk = true;
-                }
-            }
-
-            if (!andOk || !xorOk)
-            {
-                Console.WriteLine("ERROR x0,y0,z0");
-                return false;
-            }
-
-            return true;
+            return "";
         }
 
         // return error msg
-        string CheckAdder(int bitIndex)
+        string CheckFullAdder(int bitIndex, string xName, string yName, out string sum, out string carry)
         {
-            /* full adder
-             sum_i = xi ^ yi
-             c1_i  = xi & yi
-             c2_i = sum_i & c_(i-1)
+            sum = "";
+            carry = "";
 
-             zi = c_(i-1) ^ sum_i
+            var e1 = CheckHalfAdder(xName, yName, out var aXORb, out var c1);
+            if (e1 != "") return e1;
 
-             c_i = c1_i ^ c2_i
-             */
+            var carryM1 = carries[bitIndex - 1];
+            var e2 = CheckHalfAdder(aXORb, carryM1, out sum, out var c2);
+            if (e2 != "") return e2;
 
-
-            /*
-             check
-             sum_i = xi ^ yi
-             c1_i  = xi & yi
-             */
-            var cm1Name = carries[bitIndex - 1];
-            var xName = bitIndex < 10 ? $"x0{bitIndex}" : $"x{bitIndex}";
-            var yName = bitIndex < 10 ? $"y0{bitIndex}" : $"y{bitIndex}";
-            var zName = bitIndex < 10 ? $"z0{bitIndex}" : $"z{bitIndex}";
-
-            var xi = All(xName, true);
-            var yi = All(yName, true);
-            var zi = All(zName, false);
-            var cIn = All(cm1Name, true);
-
-            if (xi.Count != 2 || yi.Count != 2 || zi.Count != 1
-                || xi[0].index != yi[0].index
-                || xi[1].index != yi[1].index
-                || cIn.Count != 2
-               )
-            {
-                return "Error on xi,yi,zi";
-            }
-
-            Gate? sum_i = null, c1_i = null;
-            for (int i = 0; i < 2; ++i)
-            {
-                var op = xi[i].op;
-                if (op == Op.AND && xi[i].output != zName)
-                {
-                    c1_i = xi[i];
-                }
-
-                if (op == Op.XOR && xi[i].output != zName)
-                {
-                    sum_i = xi[i];
-                }
-            }
-
-            if (sum_i == null || c1_i == null)
-            {
-                return "sum_i, c1_i";
-            }
-
-            /*
-             check
-             c2_i = sum_i & c_(i-1)
-             zi = c_(i-1) ^ sum_i
-             */
-
-            Gate? z_i = null, c2_i = null;
-            for (int i = 0; i < 2; ++i)
-            {
-                var g = cIn[i];
-                var op = g.op;
-                if (op == Op.AND && Inputs(g, sum_i.output, cm1Name))
-                {
-                    c2_i = g;
-                }
-
-                if (op == Op.XOR && Inputs(g, sum_i.output, cm1Name) && g.output == zName)
-                {
-                    z_i = g;
-                }
-            }
-
-            if (z_i == null || c2_i == null)
-            {
-                return "z_i, c2_i";
-            }
-
-            /* check
-              c_i = c1_i ^ c2_i
-            */
-
-            var ci = gates.Where(
-                g => Inputs(g, c1_i.output, c2_i.output) && g.op == Op.OR
-            ).ToList();
+            var ci = gates.Where(g => Inputs(g, c1, c2) && g.op == Op.OR).ToList();
             if (isDebug)
                 debug.AddRange(ci);
 
             if (ci.Count != 1)
-            {
-                return "ci";
-            }
+                return "bad paired carry";
 
-            carries.Add(ci[0].output);
-
+            carry = ci[0].output;
             return "";
         }
 
